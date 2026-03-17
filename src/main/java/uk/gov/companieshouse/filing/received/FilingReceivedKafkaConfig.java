@@ -94,7 +94,7 @@ public class FilingReceivedKafkaConfig {
             @Value("${kafka.consumer.topic.filing-received}") String topic,
             @Value("${kafka.consumer.group}") String groupId,
             @Value("${kafka.consumer.retry.max-attempts}") int attempts,
-            @Value("${kafka.consumer.retry.backoff-delay}") int delay) {
+            @Value("${kafka.consumer.retry.backoff-delay-ms}") int delay) {
         return RetryTopicConfigurationBuilder
                 .newInstance()
                 .doNotAutoCreateRetryTopics() // necessary to prevent failing connection during loading of spring app context
