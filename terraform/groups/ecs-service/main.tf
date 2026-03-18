@@ -18,7 +18,7 @@ terraform {
   }
 }
 
-module "ecs-service" {
+module "ecs_service" {
   source = "git@github.com:companieshouse/terraform-modules//aws/ecs/ecs-service?ref=1.0.370"
 
   # Environmental configuration
@@ -36,14 +36,14 @@ module "ecs-service" {
   healthcheck_matcher            = local.healthcheck_matcher
 
   # Docker container details
-  docker_registry     = var.docker_registry
-  docker_repo         = local.docker_repo
-  container_version   = var.filing_notification_sender_java_version
-  container_port      = local.container_port
+  docker_registry   = var.docker_registry
+  docker_repo       = local.docker_repo
+  container_version = var.filing_notification_sender_java_version
+  container_port    = local.container_port
 
   # Service configuration
   service_name = local.service_name
-  name_prefix = local.name_prefix
+  name_prefix  = local.name_prefix
 
   # Service performance and scaling configs
   desired_task_count                   = var.desired_task_count
@@ -67,7 +67,7 @@ module "ecs-service" {
   use_set_environment_files = local.use_set_environment_files
 
   # Cloudwatch
-  cloudwatch_alarms_enabled = var.cloudwatch_alarms_enabled
+  cloudwatch_alarms_enabled               = var.cloudwatch_alarms_enabled
   cloudwatch_unhealthy_host_count_enabled = false
   cloudwatch_healthy_host_count_enabled   = false
   cloudwatch_response_time_enabled        = false
