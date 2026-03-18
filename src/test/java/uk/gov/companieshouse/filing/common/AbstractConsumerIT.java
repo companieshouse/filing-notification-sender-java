@@ -22,20 +22,21 @@ import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
+import org.springframework.kafka.test.utils.ContainerTestUtils;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.kafka.ConfluentKafkaContainer;
 
-@Testcontainers
 @WireMockTest(httpPort = 8889)
 public abstract class AbstractConsumerIT {
 
-    @Container
-    protected static final ConfluentKafkaContainer kafka = new ConfluentKafkaContainer("confluentinc/cp-kafka:latest");
+    // Container reuse dramatically speeds up test execution
+    protected static final ConfluentKafkaContainer kafka = new ConfluentKafkaContainer("confluentinc/cp-kafka:latest")
+            .withReuse(true);
 
     protected KafkaConsumer<String, byte[]> testConsumer = testConsumer(kafka.getBootstrapServers());
 
@@ -44,12 +45,19 @@ public abstract class AbstractConsumerIT {
     @Autowired
     protected TestConsumerAspect testConsumerAspect;
 
+    @BeforeAll
+    static void beforeAll() {
+        kafka.start();
+    }
+
     @BeforeEach
-    void setup() {
-        WireMock.reset();
+    protected void setup(@Autowired KafkaListenerEndpointRegistry registry) {
+        registry.getAllListenerContainers() // Ensure all listener containers are assigned to partitions before tests run
+                .forEach(container -> ContainerTestUtils.waitForAssignment(container, 1));
         testConsumerAspect.resetLatch();
         testConsumer.subscribe(getSubscribedTopics());
         testConsumer.poll(Duration.ofMillis(1000));
+        WireMock.reset();
     }
 
     @DynamicPropertySource
