@@ -35,6 +35,7 @@ import org.testcontainers.kafka.ConfluentKafkaContainer;
 public abstract class AbstractConsumerIT {
 
     // Container reuse dramatically speeds up test execution
+    // Warnings like "you must set 'testcontainers.reuse.enable=true'" are false positives
     protected static final ConfluentKafkaContainer kafka = new ConfluentKafkaContainer("confluentinc/cp-kafka:latest")
             .withReuse(true);
 

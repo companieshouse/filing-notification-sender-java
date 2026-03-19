@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.filing.processed;
+package uk.gov.companieshouse.filing.received;
 
 import java.util.Map;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -31,13 +31,13 @@ import uk.gov.companieshouse.filing.common.kafka.MessageFlags;
 
 @Configuration
 @EnableKafka
-public class FilingProcessedKafkaConfig {
+public class FilingReceivedKafkaConfig {
 
     @Value("${kafka.bootstrap-servers}")
     private String kafkaBrokers;
 
     @Bean
-    public ConsumerFactory<String, FilingProcessed> processedConsumerFactory() {
+    public ConsumerFactory<String, FilingReceived> receivedConsumerFactory() {
         return new DefaultKafkaConsumerFactory<>(
                 Map.of(
                         ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBrokers,
@@ -49,14 +49,14 @@ public class FilingProcessedKafkaConfig {
                         ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false"
                 ),
                 new StringDeserializer(),
-                new ErrorHandlingDeserializer<>(new KafkaPayloadDeserialiser<>(FilingProcessed.class)));
+                new ErrorHandlingDeserializer<>(new KafkaPayloadDeserialiser<>(FilingReceived.class)));
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, FilingProcessed> processedListenerContainerFactory(
-            ConsumerFactory<String, FilingProcessed> consumerFactory,
+    public ConcurrentKafkaListenerContainerFactory<String, FilingReceived> receivedListenerContainerFactory(
+            ConsumerFactory<String, FilingReceived> consumerFactory,
             @Value("${kafka.consumer.concurrency}") Integer concurrency) {
-        ConcurrentKafkaListenerContainerFactory<String, FilingProcessed> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        ConcurrentKafkaListenerContainerFactory<String, FilingReceived> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
         factory.setConcurrency(concurrency);
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.RECORD);
@@ -64,8 +64,8 @@ public class FilingProcessedKafkaConfig {
     }
 
     @Bean
-    public ProducerFactory<String, Object> processedProducerFactory(MessageFlags messageFlags,
-            @Value("${kafka.consumer.topic.filing-processed}") String topic,
+    public ProducerFactory<String, Object> receivedProducerFactory(MessageFlags messageFlags,
+            @Value("${kafka.consumer.topic.filing-received}") String topic,
             @Value("${kafka.consumer.group}") String groupId) {
         return new DefaultKafkaProducerFactory<>(
                 Map.of(
@@ -79,19 +79,19 @@ public class FilingProcessedKafkaConfig {
                 new StringSerializer(), new DelegatingByTypeSerializer(
                 Map.of(
                         byte[].class, new ByteArraySerializer(),
-                        FilingProcessed.class, new KafkaPayloadSerialiser<>(FilingProcessed.class))));
+                        FilingReceived.class, new KafkaPayloadSerialiser<>(FilingReceived.class))));
     }
 
     @Bean
-    public KafkaTemplate<String, Object> processedKafkaTemplate(
-            @Qualifier("processedProducerFactory") ProducerFactory<String, Object> producerFactory) {
+    public KafkaTemplate<String, Object> receivedKafkaTemplate(
+            @Qualifier("receivedProducerFactory") ProducerFactory<String, Object> producerFactory) {
         return new KafkaTemplate<>(producerFactory);
     }
 
     @Bean
-    public RetryTopicConfiguration processedRetryTopicConfiguration(
-            @Qualifier("processedKafkaTemplate") KafkaTemplate<String, Object> template,
-            @Value("${kafka.consumer.topic.filing-processed}") String topic,
+    public RetryTopicConfiguration receivedRetryTopicConfiguration(
+            @Qualifier("receivedKafkaTemplate") KafkaTemplate<String, Object> template,
+            @Value("${kafka.consumer.topic.filing-received}") String topic,
             @Value("${kafka.consumer.group}") String groupId,
             @Value("${kafka.consumer.retry.max-attempts}") int attempts,
             @Value("${kafka.consumer.retry.backoff-delay-ms}") int delay) {
