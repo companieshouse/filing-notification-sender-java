@@ -1,31 +1,12 @@
 package uk.gov.companieshouse.filing.processed;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.anyRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
-import static com.github.tomakehurst.wiremock.client.WireMock.verify;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-
-import java.time.Duration;
-import java.util.concurrent.TimeUnit;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import uk.gov.companieshouse.filing.common.Service;
-import uk.gov.companieshouse.filing.common.exception.NonRetryableException;
 
 @SpringBootTest
 class ConsumerNonRetryableExceptionIT extends AbstractFilingProcessedConsumerIT {
-
-    @MockitoBean
-    private Service<FilingProcessed> service;
 
     @DynamicPropertySource
     static void props(DynamicPropertyRegistry registry) {
@@ -33,25 +14,36 @@ class ConsumerNonRetryableExceptionIT extends AbstractFilingProcessedConsumerIT 
     }
 
     @Test
-    void testRepublishToFilingProcessedInvalidMessageTopicIfNonRetryableExceptionThrown() throws Exception {
+    void testRepublishToFilingProcessedInvalidMessageTopicWhenTransactionsApiNonRetryableErrorResponse() throws Exception {
         // given
         byte[] message = writePayloadToBytes(buildFilingProcessed(), FilingProcessed.class);
 
-        doThrow(NonRetryableException.class).when(service).handlePayload(any());
+        stubTransactionsApiResponse(400);
 
         // when
-        testProducer.send(new ProducerRecord<>(MAIN_TOPIC, 0, System.currentTimeMillis(), "key", message));
-        if (!testConsumerAspect.getLatch().await(60L, TimeUnit.SECONDS)) {
-            fail("Timed out waiting for latch");
-        }
+        publishAndAwaitConsumerLatch(message, 10);
 
         // then
-        ConsumerRecords<?, ?> consumerRecords = KafkaTestUtils.getRecords(testConsumer, Duration.ofMillis(10000L), 2);
-        assertThat(recordsPerTopic(consumerRecords, MAIN_TOPIC)).isOne();
-        assertThat(recordsPerTopic(consumerRecords, RETRY_TOPIC)).isZero();
-        assertThat(recordsPerTopic(consumerRecords, ERROR_TOPIC)).isZero();
-        assertThat(recordsPerTopic(consumerRecords, INVALID_TOPIC)).isOne();
-        verify(0, anyRequestedFor(anyUrl()));
+        assertExpectedRecordsPerTopic(0, 0, 1);
+        verifyTransactionsApiRequest(1);
+        verifyKafkaApiRequest(0);
+    }
+
+    @Test
+    void testRepublishToFilingProcessedInvalidMessageTopicWhenKafkaApiNonRetryableErrorResponse() throws Exception {
+        // given
+        byte[] message = writePayloadToBytes(buildFilingProcessed(), FilingProcessed.class);
+
+        stubTransactionsApiResponse(200);
+        stubKafkaApiResponse(400);
+
+        // when
+        publishAndAwaitConsumerLatch(message, 10);
+
+        // then
+        assertExpectedRecordsPerTopic(0, 0, 1);
+        verifyTransactionsApiRequest(1);
+        verifyKafkaApiRequest(1);
     }
 
     @Test
@@ -60,14 +52,11 @@ class ConsumerNonRetryableExceptionIT extends AbstractFilingProcessedConsumerIT 
         byte[] message = writePayloadToBytes("bad data", String.class);
 
         // when
-        testProducer.send(new ProducerRecord<>(MAIN_TOPIC, 0, System.currentTimeMillis(), "key", message));
+        publish(message);
 
         // then
-        ConsumerRecords<?, ?> consumerRecords = KafkaTestUtils.getRecords(testConsumer, Duration.ofMillis(10000L), 2);
-        assertThat(recordsPerTopic(consumerRecords, MAIN_TOPIC)).isOne();
-        assertThat(recordsPerTopic(consumerRecords, RETRY_TOPIC)).isZero();
-        assertThat(recordsPerTopic(consumerRecords, ERROR_TOPIC)).isZero();
-        assertThat(recordsPerTopic(consumerRecords, INVALID_TOPIC)).isOne();
-        verify(0, anyRequestedFor(anyUrl()));
+        assertExpectedRecordsPerTopic(0, 0, 1);
+        verifyTransactionsApiRequest(0);
+        verifyKafkaApiRequest(0);
     }
 }

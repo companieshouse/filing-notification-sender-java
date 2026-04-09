@@ -5,14 +5,8 @@ import uk.gov.companieshouse.filing.common.AbstractConsumerIT;
 
 abstract class AbstractFilingReceivedConsumerIT extends AbstractConsumerIT {
 
-    static final String MAIN_TOPIC = "filing-received";
-    static final String RETRY_TOPIC = "filing-received-filing-notification-sender-retry";
-    static final String ERROR_TOPIC = "filing-received-filing-notification-sender-error";
-    static final String INVALID_TOPIC = "filing-received-filing-notification-sender-invalid";
-
-    @Override
-    protected List<String> getSubscribedTopics() {
-        return List.of(MAIN_TOPIC, RETRY_TOPIC, ERROR_TOPIC, INVALID_TOPIC);
+    AbstractFilingReceivedConsumerIT() {
+        super("filing-received");
     }
 
     static FilingReceived buildFilingReceived() {
