@@ -44,81 +44,71 @@ class KafkaApiClientTest {
     @Test
     void shouldPostMessageSendSuccessfully() throws ApiErrorResponseException {
         // Given
-        when(internalApiClientFactory.getKafkaApiHostClient()).thenReturn(internalApiClient);
-        when(internalApiClient.messageSendHandler()).thenReturn(privateMessageSendHandler);
-        when(privateMessageSendHandler.postMessageSend(any(), any())).thenReturn(privateMessageSendPost);
+        stubCommonClientMethods();
         when(privateMessageSendPost.execute()).thenReturn(new ApiResponse<>(200, null, null));
 
         // When
         kafkaApiClient.postMessageSend(messageSend);
 
         // Then
-        verify(internalApiClientFactory).getKafkaApiHostClient();
-        verify(internalApiClient).messageSendHandler();
-        verify(privateMessageSendHandler).postMessageSend(RESOURCE_URI, messageSend);
-        verify(privateMessageSendPost).execute();
+        verifyCommonClientMethods();
     }
 
     @Test
-    void shouldThrowNonRetryableExceptionWhenApiErrorResponseBadRequest() throws ApiErrorResponseException {
+    void shouldThrowNonRetryableExceptionWhenApiErrorResponse400() throws ApiErrorResponseException {
         // given
-        when(internalApiClientFactory.getKafkaApiHostClient()).thenReturn(internalApiClient);
-        when(internalApiClient.messageSendHandler()).thenReturn(privateMessageSendHandler);
-        when(privateMessageSendHandler.postMessageSend(any(), any())).thenReturn(privateMessageSendPost);
-
-        HttpResponseException.Builder builder = new HttpResponseException.Builder(400, "bad request", new HttpHeaders());
-        ApiErrorResponseException errorResponseException = new ApiErrorResponseException(builder);
-        when(privateMessageSendPost.execute()).thenThrow(errorResponseException);
+        stubCommonClientMethods();
+        stubErrorResponseException(400);
 
         // when
         Executable executable = () -> kafkaApiClient.postMessageSend(messageSend);
 
         // then
         assertThrows(NonRetryableException.class, executable);
-        verify(internalApiClientFactory).getKafkaApiHostClient();
-        verify(internalApiClient).messageSendHandler();
-        verify(privateMessageSendHandler).postMessageSend(RESOURCE_URI, messageSend);
-        verify(privateMessageSendPost).execute();
+        verifyCommonClientMethods();
     }
 
     @Test
-    void shouldThrowNonRetryableExceptionWhenApiErrorResponseConflict() throws ApiErrorResponseException {
+    void shouldThrowNonRetryableExceptionWhenApiErrorResponse409() throws ApiErrorResponseException {
         // given
-        when(internalApiClientFactory.getKafkaApiHostClient()).thenReturn(internalApiClient);
-        when(internalApiClient.messageSendHandler()).thenReturn(privateMessageSendHandler);
-        when(privateMessageSendHandler.postMessageSend(any(), any())).thenReturn(privateMessageSendPost);
-
-        HttpResponseException.Builder builder = new HttpResponseException.Builder(409, "conflict", new HttpHeaders());
-        ApiErrorResponseException errorResponseException = new ApiErrorResponseException(builder);
-        when(privateMessageSendPost.execute()).thenThrow(errorResponseException);
+        stubCommonClientMethods();
+        stubErrorResponseException(409);
 
         // when
         Executable executable = () -> kafkaApiClient.postMessageSend(messageSend);
 
         // then
         assertThrows(NonRetryableException.class, executable);
-        verify(internalApiClientFactory).getKafkaApiHostClient();
-        verify(internalApiClient).messageSendHandler();
-        verify(privateMessageSendHandler).postMessageSend(RESOURCE_URI, messageSend);
-        verify(privateMessageSendPost).execute();
+        verifyCommonClientMethods();
     }
 
     @Test
     void shouldThrowRetryableExceptionWhenApiErrorResponseRetryable() throws ApiErrorResponseException {
         // given
-        when(internalApiClientFactory.getKafkaApiHostClient()).thenReturn(internalApiClient);
-        when(internalApiClient.messageSendHandler()).thenReturn(privateMessageSendHandler);
-        when(privateMessageSendHandler.postMessageSend(any(), any())).thenReturn(privateMessageSendPost);
-
-        HttpResponseException.Builder builder = new HttpResponseException.Builder(503, "service unavailable", new HttpHeaders());
-        ApiErrorResponseException errorResponseException = new ApiErrorResponseException(builder);
-        when(privateMessageSendPost.execute()).thenThrow(errorResponseException);
+        stubCommonClientMethods();
+        stubErrorResponseException(503);
 
         // when
         Executable executable = () -> kafkaApiClient.postMessageSend(messageSend);
 
         // then
         assertThrows(RetryableException.class, executable);
+        verifyCommonClientMethods();
+    }
+
+    private void stubCommonClientMethods() {
+        when(internalApiClientFactory.getKafkaApiHostClient()).thenReturn(internalApiClient);
+        when(internalApiClient.messageSendHandler()).thenReturn(privateMessageSendHandler);
+        when(privateMessageSendHandler.postMessageSend(any(), any())).thenReturn(privateMessageSendPost);
+    }
+
+    private void stubErrorResponseException(int statusCode) throws ApiErrorResponseException {
+        HttpResponseException.Builder builder = new HttpResponseException.Builder(statusCode, "error", new HttpHeaders());
+        ApiErrorResponseException errorResponseException = new ApiErrorResponseException(builder);
+        when(privateMessageSendPost.execute()).thenThrow(errorResponseException);
+    }
+
+    private void verifyCommonClientMethods() throws ApiErrorResponseException {
         verify(internalApiClientFactory).getKafkaApiHostClient();
         verify(internalApiClient).messageSendHandler();
         verify(privateMessageSendHandler).postMessageSend(RESOURCE_URI, messageSend);

@@ -47,9 +47,7 @@ class TransactionsApiClientTest {
         // Given
         Transaction expected = new Transaction();
 
-        when(internalApiClientFactory.getPrivateApiHostClient()).thenReturn(internalApiClient);
-        when(internalApiClient.privateTransaction()).thenReturn(privateTransactionResourceHandler);
-        when(privateTransactionResourceHandler.get(any())).thenReturn(privateTransactionGet);
+        stubCommonClientMethods();
         when(privateTransactionGet.execute()).thenReturn(new ApiResponse<>(200, null, expected));
 
         // When
@@ -57,85 +55,55 @@ class TransactionsApiClientTest {
 
         // Then
         assertEquals(expected, actual);
-        verify(internalApiClientFactory).getPrivateApiHostClient();
-        verify(internalApiClient).privateTransaction();
-        verify(privateTransactionResourceHandler).get(RESOURCE_URI);
-        verify(privateTransactionGet).execute();
+        verifyCommonClientMethods();
     }
 
     @Test
-    void shouldThrowNonRetryableExceptionWhenApiErrorResponseBadRequest()
-            throws ApiErrorResponseException, URIValidationException {
+    void shouldThrowNonRetryableExceptionWhenApiErrorResponse400() throws ApiErrorResponseException, URIValidationException {
         // given
-        when(internalApiClientFactory.getPrivateApiHostClient()).thenReturn(internalApiClient);
-        when(internalApiClient.privateTransaction()).thenReturn(privateTransactionResourceHandler);
-        when(privateTransactionResourceHandler.get(any())).thenReturn(privateTransactionGet);
-
-        HttpResponseException.Builder builder = new HttpResponseException.Builder(400, "bad request", new HttpHeaders());
-        ApiErrorResponseException errorResponseException = new ApiErrorResponseException(builder);
-        when(privateTransactionGet.execute()).thenThrow(errorResponseException);
+        stubCommonClientMethods();
+        stubErrorResponseException(400);
 
         // when
         Executable executable = () -> transactionsApiClient.getTransaction(TRANSACTION_ID);
 
         // then
         assertThrows(NonRetryableException.class, executable);
-        verify(internalApiClientFactory).getPrivateApiHostClient();
-        verify(internalApiClient).privateTransaction();
-        verify(privateTransactionResourceHandler).get(RESOURCE_URI);
-        verify(privateTransactionGet).execute();
+        verifyCommonClientMethods();
     }
 
     @Test
-    void shouldThrowNonRetryableExceptionWhenApiErrorResponseConflict() throws ApiErrorResponseException, URIValidationException {
+    void shouldThrowNonRetryableExceptionWhenApiErrorResponse409() throws ApiErrorResponseException, URIValidationException {
         // given
-        when(internalApiClientFactory.getPrivateApiHostClient()).thenReturn(internalApiClient);
-        when(internalApiClient.privateTransaction()).thenReturn(privateTransactionResourceHandler);
-        when(privateTransactionResourceHandler.get(any())).thenReturn(privateTransactionGet);
-
-        HttpResponseException.Builder builder = new HttpResponseException.Builder(409, "conflict", new HttpHeaders());
-        ApiErrorResponseException errorResponseException = new ApiErrorResponseException(builder);
-        when(privateTransactionGet.execute()).thenThrow(errorResponseException);
+        stubCommonClientMethods();
+        stubErrorResponseException(409);
 
         // when
         Executable executable = () -> transactionsApiClient.getTransaction(TRANSACTION_ID);
 
         // then
         assertThrows(NonRetryableException.class, executable);
-        verify(internalApiClientFactory).getPrivateApiHostClient();
-        verify(internalApiClient).privateTransaction();
-        verify(privateTransactionResourceHandler).get(RESOURCE_URI);
-        verify(privateTransactionGet).execute();
+        verifyCommonClientMethods();
     }
 
     @Test
     void shouldThrowRetryableExceptionWhenApiErrorResponseRetryable() throws ApiErrorResponseException, URIValidationException {
         // given
-        when(internalApiClientFactory.getPrivateApiHostClient()).thenReturn(internalApiClient);
-        when(internalApiClient.privateTransaction()).thenReturn(privateTransactionResourceHandler);
-        when(privateTransactionResourceHandler.get(any())).thenReturn(privateTransactionGet);
-
-        HttpResponseException.Builder builder = new HttpResponseException.Builder(503, "service unavailable", new HttpHeaders());
-        ApiErrorResponseException errorResponseException = new ApiErrorResponseException(builder);
-        when(privateTransactionGet.execute()).thenThrow(errorResponseException);
+        stubCommonClientMethods();
+        stubErrorResponseException(503);
 
         // when
         Executable executable = () -> transactionsApiClient.getTransaction(TRANSACTION_ID);
 
         // then
         assertThrows(RetryableException.class, executable);
-        verify(internalApiClientFactory).getPrivateApiHostClient();
-        verify(internalApiClient).privateTransaction();
-        verify(privateTransactionResourceHandler).get(RESOURCE_URI);
-        verify(privateTransactionGet).execute();
+        verifyCommonClientMethods();
     }
 
     @Test
     void shouldThrowNonRetryableExceptionWhenUriValidationException() throws ApiErrorResponseException, URIValidationException {
         // given
-        when(internalApiClientFactory.getPrivateApiHostClient()).thenReturn(internalApiClient);
-        when(internalApiClient.privateTransaction()).thenReturn(privateTransactionResourceHandler);
-        when(privateTransactionResourceHandler.get(any())).thenReturn(privateTransactionGet);
+        stubCommonClientMethods();
         when(privateTransactionGet.execute()).thenThrow(new URIValidationException("Invalid URI"));
 
         // when
@@ -143,6 +111,22 @@ class TransactionsApiClientTest {
 
         // then
         assertThrows(NonRetryableException.class, executable);
+        verifyCommonClientMethods();
+    }
+
+    private void stubCommonClientMethods() {
+        when(internalApiClientFactory.getPrivateApiHostClient()).thenReturn(internalApiClient);
+        when(internalApiClient.privateTransaction()).thenReturn(privateTransactionResourceHandler);
+        when(privateTransactionResourceHandler.get(any())).thenReturn(privateTransactionGet);
+    }
+
+    private void stubErrorResponseException(int statusCode) throws URIValidationException, ApiErrorResponseException {
+        HttpResponseException.Builder builder = new HttpResponseException.Builder(statusCode, "error", new HttpHeaders());
+        ApiErrorResponseException errorResponseException = new ApiErrorResponseException(builder);
+        when(privateTransactionGet.execute()).thenThrow(errorResponseException);
+    }
+
+    private void verifyCommonClientMethods() throws URIValidationException, ApiErrorResponseException {
         verify(internalApiClientFactory).getPrivateApiHostClient();
         verify(internalApiClient).privateTransaction();
         verify(privateTransactionResourceHandler).get(RESOURCE_URI);
