@@ -5,6 +5,7 @@ import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import com.google.common.collect.Iterables;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,7 @@ import org.apache.avro.io.DatumWriter;
 import org.apache.avro.io.Encoder;
 import org.apache.avro.io.EncoderFactory;
 import org.apache.avro.reflect.ReflectDatumWriter;
+import org.apache.commons.io.IOUtils;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -81,6 +83,10 @@ public abstract class AbstractConsumerIT {
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
+    }
+
+    protected static String buildTransactionResponseBody() throws IOException {
+        return IOUtils.resourceToString("/processed/transactions-response.json", StandardCharsets.UTF_8);
     }
 
     private static KafkaConsumer<String, byte[]> testConsumer(String bootstrapServers) {
