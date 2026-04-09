@@ -1,9 +1,5 @@
 package uk.gov.companieshouse.filing.received;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.anyRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
-import static com.github.tomakehurst.wiremock.client.WireMock.verify;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -22,11 +18,15 @@ class ConsumerPositiveIT extends AbstractFilingReceivedConsumerIT {
         // given
         byte[] message = writePayloadToBytes(buildFilingReceived(), FilingReceived.class);
 
+        stubTransactionsApiResponse(200);
+        stubKafkaApiResponse(200);
+
         // when
         publishAndAwaitConsumerLatch(message, 10);
 
         // then
         assertExpectedRecordsPerTopic(0, 0, 0);
-        verify(0, anyRequestedFor(anyUrl()));
+        verifyTransactionsApiRequest(1);
+        verifyKafkaApiRequest(2);
     }
 }
