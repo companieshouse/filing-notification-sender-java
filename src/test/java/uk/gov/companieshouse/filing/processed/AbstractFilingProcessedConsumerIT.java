@@ -1,18 +1,15 @@
 package uk.gov.companieshouse.filing.processed;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import org.apache.commons.io.IOUtils;
 import uk.gov.companieshouse.filing.common.AbstractConsumerIT;
 
 abstract class AbstractFilingProcessedConsumerIT extends AbstractConsumerIT {
 
-    static final String MAIN_TOPIC = "filing-processed";
-    static final String RETRY_TOPIC = "filing-processed-filing-notification-sender-retry";
-    static final String ERROR_TOPIC = "filing-processed-filing-notification-sender-error";
-    static final String INVALID_TOPIC = "filing-processed-filing-notification-sender-invalid";
-
-    @Override
-    protected List<String> getSubscribedTopics() {
-        return List.of(MAIN_TOPIC, RETRY_TOPIC, ERROR_TOPIC, INVALID_TOPIC);
+    AbstractFilingProcessedConsumerIT() {
+        super("filing-processed");
     }
 
     static FilingProcessed buildFilingProcessed() {
@@ -32,6 +29,10 @@ abstract class AbstractFilingProcessedConsumerIT extends AbstractConsumerIT {
         filingProcessed.setSubmission(submissionRecord);
 
         return filingProcessed;
+    }
+
+    static String buildMessageSendRequestBody() throws IOException {
+        return IOUtils.resourceToString("/processed/message-send-request.json", StandardCharsets.UTF_8);
     }
 
     private static ResponseRecord buildResponseRecord() {

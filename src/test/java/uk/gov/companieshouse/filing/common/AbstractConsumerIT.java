@@ -1,5 +1,16 @@
 package uk.gov.companieshouse.filing.common;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.verify;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import com.google.common.collect.Iterables;
@@ -8,45 +19,55 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import org.apache.avro.io.DatumWriter;
 import org.apache.avro.io.Encoder;
 import org.apache.avro.io.EncoderFactory;
 import org.apache.avro.reflect.ReflectDatumWriter;
 import org.apache.commons.io.IOUtils;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.common.serialization.ByteArrayDeserializer;
-import org.apache.kafka.common.serialization.ByteArraySerializer;
-import org.apache.kafka.common.serialization.StringDeserializer;
-import org.apache.kafka.common.serialization.StringSerializer;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.test.utils.ContainerTestUtils;
+import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.kafka.ConfluentKafkaContainer;
 
 @WireMockTest(httpPort = 8889)
+@Import(TestKafkaConfig.class)
 public abstract class AbstractConsumerIT {
 
     // Container reuse dramatically speeds up test execution
     // Warnings like "you must set 'testcontainers.reuse.enable=true'" are false positives
     protected static final ConfluentKafkaContainer kafka = new ConfluentKafkaContainer("confluentinc/cp-kafka:latest")
             .withReuse(true);
-
-    protected KafkaConsumer<String, byte[]> testConsumer = testConsumer(kafka.getBootstrapServers());
-
-    protected KafkaProducer<String, byte[]> testProducer = testProducer(kafka.getBootstrapServers());
+    private static final String GROUP = "filing-notification-sender";
 
     @Autowired
-    protected TestConsumerAspect testConsumerAspect;
+    private KafkaConsumer<String, byte[]> testConsumer;
+    @Autowired
+    private KafkaProducer<String, byte[]> testProducer;
+    @Autowired
+    private TestConsumerAspect testConsumerAspect;
+
+    private final String mainTopic;
+    private final String retryTopic;
+    private final String errorTopic;
+    private final String invalidTopic;
+
+    protected AbstractConsumerIT(String mainTopic) {
+        this.mainTopic = mainTopic;
+        this.retryTopic = "%s-%s-retry".formatted(mainTopic, GROUP);
+        this.errorTopic = "%s-%s-error".formatted(mainTopic, GROUP);
+        this.invalidTopic = "%s-%s-invalid".formatted(mainTopic, GROUP);
+    }
 
     @BeforeAll
     static void beforeAll() {
@@ -58,7 +79,7 @@ public abstract class AbstractConsumerIT {
         registry.getAllListenerContainers() // Ensure all listener containers are assigned to partitions before tests run
                 .forEach(container -> ContainerTestUtils.waitForAssignment(container, 1));
         testConsumerAspect.resetLatch();
-        testConsumer.subscribe(getSubscribedTopics());
+        testConsumer.subscribe(List.of(mainTopic, retryTopic, errorTopic, invalidTopic));
         testConsumer.poll(Duration.ofMillis(1000));
         WireMock.reset();
     }
@@ -66,12 +87,6 @@ public abstract class AbstractConsumerIT {
     @DynamicPropertySource
     static void props(DynamicPropertyRegistry registry) {
         registry.add("kafka.bootstrap-servers", kafka::getBootstrapServers);
-    }
-
-    protected abstract List<String> getSubscribedTopics();
-
-    protected static int recordsPerTopic(ConsumerRecords<?, ?> records, String topic) {
-        return Iterables.size(records.records(topic));
     }
 
     protected static <T> byte[] writePayloadToBytes(T data, Class<T> type) {
@@ -85,27 +100,50 @@ public abstract class AbstractConsumerIT {
         }
     }
 
-    protected static String buildTransactionResponseBody() throws IOException {
-        return IOUtils.resourceToString("/processed/transactions-response.json", StandardCharsets.UTF_8);
+    protected static void stubTransactionsApiResponse(int statusCode) throws IOException {
+        if (statusCode != 200) {
+            stubFor(get("/private/transactions/987654")
+                    .willReturn(aResponse()
+                            .withStatus(statusCode)));
+        } else {
+            String response = IOUtils.resourceToString("/processed/transaction-response.json", StandardCharsets.UTF_8);
+            stubFor(get("/private/transactions/987654")
+                    .willReturn(aResponse()
+                            .withStatus(statusCode)
+                            .withBody(response)));
+        }
     }
 
-    private static KafkaConsumer<String, byte[]> testConsumer(String bootstrapServers) {
-        return new KafkaConsumer<>(
-                Map.of(
-                        ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers,
-                        ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class,
-                        ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class,
-                        ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest",
-                        ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false",
-                        ConsumerConfig.GROUP_ID_CONFIG, UUID.randomUUID().toString()),
-                new StringDeserializer(), new ByteArrayDeserializer());
+    protected static void stubKafkaApiResponse(int statusCode) {
+        stubFor(post("/message-send")
+                .willReturn(aResponse()
+                        .withStatus(statusCode)));
     }
 
-    private static KafkaProducer<String, byte[]> testProducer(String bootstrapServers) {
-        return new KafkaProducer<>(
-                Map.of(
-                        ProducerConfig.ACKS_CONFIG, "all",
-                        ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers),
-                new StringSerializer(), new ByteArraySerializer());
+    protected void publish(byte[] message) {
+        testProducer.send(new ProducerRecord<>(mainTopic, 0, System.currentTimeMillis(), "key", message));
+    }
+
+    protected void publishAndAwaitConsumerLatch(byte[] message, int latchTimeout) throws InterruptedException {
+        publish(message);
+        if (!testConsumerAspect.getLatch().await(latchTimeout, TimeUnit.SECONDS)) {
+            fail("Timed out waiting for latch");
+        }
+    }
+
+    protected void assertExpectedRecordsPerTopic(int retrySize, int errorSize, int invalidSize) {
+        ConsumerRecords<?, ?> consumerRecords = KafkaTestUtils.getRecords(testConsumer, Duration.ofMillis(1000L), 7);
+        assertEquals(1, Iterables.size(consumerRecords.records(mainTopic)));
+        assertEquals(retrySize, Iterables.size(consumerRecords.records(retryTopic)));
+        assertEquals(errorSize, Iterables.size(consumerRecords.records(errorTopic)));
+        assertEquals(invalidSize, Iterables.size(consumerRecords.records(invalidTopic)));
+    }
+
+    protected static void verifyTransactionsApiRequest(int count) {
+        verify(count, getRequestedFor(urlEqualTo("/private/transactions/987654")));
+    }
+
+    protected static void verifyKafkaApiRequest(int count) {
+        verify(count, postRequestedFor(urlEqualTo("/message-send")));
     }
 }
