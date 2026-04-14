@@ -1,18 +1,7 @@
 package uk.gov.companieshouse.filing.processed;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.anyRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
-import static com.github.tomakehurst.wiremock.client.WireMock.verify;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.fail;
-
-import java.time.Duration;
-import java.util.concurrent.TimeUnit;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
@@ -29,18 +18,15 @@ class ConsumerPositiveIT extends AbstractFilingProcessedConsumerIT {
         // given
         byte[] message = writePayloadToBytes(buildFilingProcessed(), FilingProcessed.class);
 
+        stubTransactionsApiResponse(200);
+        stubKafkaApiResponse(200);
+
         // when
-        testProducer.send(new ProducerRecord<>(MAIN_TOPIC, 0, System.currentTimeMillis(), "key", message));
-        if (!testConsumerAspect.getLatch().await(10, TimeUnit.SECONDS)) {
-            fail("Timed out waiting for latch");
-        }
+        publishAndAwaitConsumerLatch(message, 10);
 
         // then
-        ConsumerRecords<?, ?> consumerRecords = KafkaTestUtils.getRecords(testConsumer, Duration.ofMillis(10000L), 1);
-        assertThat(recordsPerTopic(consumerRecords, MAIN_TOPIC)).isOne();
-        assertThat(recordsPerTopic(consumerRecords, RETRY_TOPIC)).isZero();
-        assertThat(recordsPerTopic(consumerRecords, ERROR_TOPIC)).isZero();
-        assertThat(recordsPerTopic(consumerRecords, INVALID_TOPIC)).isZero();
-        verify(0, anyRequestedFor(anyUrl()));
+        assertExpectedRecordsPerTopic(0, 0, 0);
+        verifyTransactionsApiRequest(1);
+        verifyKafkaApiRequest(1);
     }
 }
