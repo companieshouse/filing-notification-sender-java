@@ -34,11 +34,17 @@ abstract class AbstractFilingReceivedConsumerIT extends AbstractConsumerIT {
     }
 
     private static List<Transaction> buildItems() {
-        Transaction transaction = new Transaction();
-        transaction.setData("data");
-        transaction.setKind("kind");
-        transaction.setSubmissionId("submissionId");
-        transaction.setSubmissionLanguage("ENG");
-        return List.of(transaction);
+        Transaction transaction1 = new Transaction();
+        transaction1.setData("data");
+        transaction1.setKind("kind");
+        transaction1.setSubmissionId("submissionId1");
+        transaction1.setSubmissionLanguage("ENG");
+
+        Transaction transaction2 = new Transaction();
+        transaction2.setData("data");
+        transaction2.setKind("kind");
+        transaction2.setSubmissionId("submissionId2");
+        transaction2.setSubmissionLanguage("ENG");
+        return List.of(transaction1, transaction2);
     }
 }
