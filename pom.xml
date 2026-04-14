@@ -47,6 +47,30 @@
                 <artifactId>avro</artifactId>
                 <version>1.12.1</version>
             </dependency>
+            <!-- GHSA-2m67-wjpj-xhg9 -->
+            <dependency>
+                <groupId>tools.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>3.1.1</version>
+            </dependency>
+            <!-- CVE-2026-33186 -->
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-api</artifactId>
+                <version>1.80.0</version>
+            </dependency>
+            <!-- CVE-2026-33186 -->
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-context</artifactId>
+                <version>1.80.0</version>
+            </dependency>
+            <!-- CVE-2026-34483 -->
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-core</artifactId>
+                <version>11.0.21</version>
+            </dependency>
             <!-- end fix versions for vulnerable transitive dependencies -->
         </dependencies>
     </dependencyManagement>
@@ -130,6 +154,11 @@
                 <exclusion>
                     <groupId>com.dynatrace.hash4j</groupId>
                     <artifactId>hash4j</artifactId>
+                </exclusion>
+                <!-- not required, use logback instead -->
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-core</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
