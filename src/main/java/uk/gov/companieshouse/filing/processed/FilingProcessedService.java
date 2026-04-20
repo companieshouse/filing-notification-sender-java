@@ -6,6 +6,7 @@ import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.filing.common.Service;
 import uk.gov.companieshouse.filing.common.client.KafkaApiClient;
 import uk.gov.companieshouse.filing.common.client.TransactionsApiClient;
+import uk.gov.companieshouse.filing.processed.mapper.FilingProcessedMapper;
 
 @Component
 public class FilingProcessedService implements Service<FilingProcessed> {

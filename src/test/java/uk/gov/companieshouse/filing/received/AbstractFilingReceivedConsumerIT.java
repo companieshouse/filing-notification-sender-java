@@ -17,7 +17,7 @@ abstract class AbstractFilingReceivedConsumerIT extends AbstractConsumerIT {
         presenter.setSurname("surname");
 
         SubmissionRecord submissionRecord = new SubmissionRecord();
-        submissionRecord.setTransactionId("987654");
+        submissionRecord.setTransactionId("021787-298317-763347");
         submissionRecord.setCompanyName("companyName");
         submissionRecord.setCompanyNumber("12345678");
         submissionRecord.setReceivedAt("2026-02-17T16:34:50Z");

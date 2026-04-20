@@ -14,7 +14,7 @@ class ConsumerPositiveIT extends AbstractFilingReceivedConsumerIT {
     }
 
     @Test
-    void shouldConsumeFilingReceivedMessagesAndProcessSuccessfully() throws Exception {
+    void shouldConsumeFilingReceivedMessageAndProcessSuccessfully() throws Exception {
         // given
         byte[] message = writePayloadToBytes(buildFilingReceived(), FilingReceived.class);
 
@@ -27,6 +27,6 @@ class ConsumerPositiveIT extends AbstractFilingReceivedConsumerIT {
         // then
         assertExpectedRecordsPerTopic(0, 0, 0);
         verifyTransactionsApiRequest(1);
-        verifyKafkaApiRequest(2);
+        verifyKafkaApiRequest(2, "");
     }
 }

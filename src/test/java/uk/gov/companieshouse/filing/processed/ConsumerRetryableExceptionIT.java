@@ -16,7 +16,7 @@ class ConsumerRetryableExceptionIT extends AbstractFilingProcessedConsumerIT {
     @Test
     void testRepublishToErrorTopicThroughRetryTopicsWhenTransactionsApiErrorResponse() throws Exception {
         // given
-        byte[] message = writePayloadToBytes(buildFilingProcessed(), FilingProcessed.class);
+        byte[] message = buildFilingProcessedAcceptedBytes();
 
         stubTransactionsApiResponse(500);
 
@@ -26,13 +26,13 @@ class ConsumerRetryableExceptionIT extends AbstractFilingProcessedConsumerIT {
         // then
         assertExpectedRecordsPerTopic(4, 1, 0);
         verifyTransactionsApiRequest(5);
-        verifyKafkaApiRequest(0);
+        verifyKafkaApiRequest(0, "");
     }
 
     @Test
     void testRepublishToErrorTopicThroughRetryTopicsWhenKafkaApiErrorResponse() throws Exception {
         // given
-        byte[] message = writePayloadToBytes(buildFilingProcessed(), FilingProcessed.class);
+        byte[] message = buildFilingProcessedAcceptedBytes();
 
         stubTransactionsApiResponse(200);
         stubKafkaApiResponse(500);
@@ -43,6 +43,6 @@ class ConsumerRetryableExceptionIT extends AbstractFilingProcessedConsumerIT {
         // then
         assertExpectedRecordsPerTopic(4, 1, 0);
         verifyTransactionsApiRequest(5);
-        verifyKafkaApiRequest(5);
+        verifyKafkaApiRequest(5, "");
     }
 }

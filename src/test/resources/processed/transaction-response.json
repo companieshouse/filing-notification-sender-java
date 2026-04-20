@@ -1,1 +1,16 @@
-{}
+{
+  "company_name": "PSC VERIFICATION SECURITY TESTING LTD",
+  "filings": {
+    "021787-298317-763347-1": {
+      "description": "Filing to provide identity verification details for a PSC",
+      "links": {
+        "resource": "/transactions/021787-298317-763347/persons-with-significant-control-verification/69e0b7ae983ea503c06aca9c"
+      },
+      "status": "accepted",
+      "type": "psc-verification#psc-verification-individual",
+      "company_number": "15220419",
+      "description_identifier": "",
+      "processed_at": "2026-04-16T10:19:56Z"
+    }
+  }
+}

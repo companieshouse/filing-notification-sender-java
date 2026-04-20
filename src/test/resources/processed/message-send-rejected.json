@@ -1,0 +1,31 @@
+{
+  "app_id": "filing_processed_notification_sender.filing_rejected_email",
+  "message_id": "<021787-298317-763347.12345@companieshouse.gov.uk>",
+  "message_type": "filing_rejected_email",
+  "data": {
+    "CompanyNumber": "15220419",
+    "CompanyName": "PSC VERIFICATION SECURITY TESTING LTD",
+    "FilingDate": null,
+    "FilingDescription": "Filing to provide identity verification details for a PSC",
+    "FilingType": null,
+    "IsDelete": null,
+    "ChsURL": "http://localhost:8889",
+    "MonitorURL": null,
+    "From": null,
+    "Subject": "Filing to provide identity verification details for a PSC rejected for PSC VERIFICATION SECURITY TESTING LTD (15220419)",
+    "To": "WoJPSpnEN_p8g1ENkLoA1VnFPQM",
+    "ProcessedAt": "16 April 2026",
+    "Status": "rejected",
+    "TransactionId": "021787-298317-763347",
+    "RejectReasonsEnglish": [
+      "Incorrect document type",
+      "Missing signature"
+    ],
+    "RejectReasonsWelsh": [
+      "Math o ddogfen anghywir",
+      "Llofnod ar goll"
+    ]
+  },
+  "user_id": "WoJPSpnEN_p8g1ENkLoA1VnFPQM",
+  "created_at": "2026-04-16T10:20:26"
+}

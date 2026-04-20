@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.filing.common;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
@@ -10,6 +11,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.when;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
@@ -20,11 +22,17 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import org.apache.avro.Schema;
+import org.apache.avro.io.DatumReader;
 import org.apache.avro.io.DatumWriter;
+import org.apache.avro.io.Decoder;
+import org.apache.avro.io.DecoderFactory;
 import org.apache.avro.io.Encoder;
 import org.apache.avro.io.EncoderFactory;
+import org.apache.avro.reflect.ReflectDatumReader;
 import org.apache.avro.reflect.ReflectDatumWriter;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -38,6 +46,7 @@ import org.springframework.kafka.test.utils.ContainerTestUtils;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.kafka.ConfluentKafkaContainer;
 
 @WireMockTest(httpPort = 8889)
@@ -50,6 +59,8 @@ public abstract class AbstractConsumerIT {
             .withReuse(true);
     private static final String GROUP = "filing-notification-sender";
 
+    @MockitoBean
+    private RandomNumberGenerator randomNumberGenerator;
     @Autowired
     private KafkaConsumer<String, byte[]> testConsumer;
     @Autowired
@@ -82,11 +93,20 @@ public abstract class AbstractConsumerIT {
         testConsumer.subscribe(List.of(mainTopic, retryTopic, errorTopic, invalidTopic));
         testConsumer.poll(Duration.ofMillis(1000));
         WireMock.reset();
+
+        when(randomNumberGenerator.fiveDigitNumber()).thenReturn("12345");
     }
 
     @DynamicPropertySource
     static void props(DynamicPropertyRegistry registry) {
         registry.add("kafka.bootstrap-servers", kafka::getBootstrapServers);
+    }
+
+    protected static <T> T readAvroJson(String filename, Class<T> type, Schema schema) throws IOException {
+        String json = IOUtils.resourceToString(filename, StandardCharsets.UTF_8);
+        Decoder decoder = DecoderFactory.get().jsonDecoder(schema, json);
+        DatumReader<T> reader = new ReflectDatumReader<>(type);
+        return reader.read(null, decoder);
     }
 
     protected static <T> byte[] writePayloadToBytes(T data, Class<T> type) {
@@ -102,12 +122,12 @@ public abstract class AbstractConsumerIT {
 
     protected static void stubTransactionsApiResponse(int statusCode) throws IOException {
         if (statusCode != 200) {
-            stubFor(get("/private/transactions/987654")
+            stubFor(get("/private/transactions/021787-298317-763347")
                     .willReturn(aResponse()
                             .withStatus(statusCode)));
         } else {
             String response = IOUtils.resourceToString("/processed/transaction-response.json", StandardCharsets.UTF_8);
-            stubFor(get("/private/transactions/987654")
+            stubFor(get("/private/transactions/021787-298317-763347")
                     .willReturn(aResponse()
                             .withStatus(statusCode)
                             .withBody(response)));
@@ -140,10 +160,16 @@ public abstract class AbstractConsumerIT {
     }
 
     protected static void verifyTransactionsApiRequest(int count) {
-        verify(count, getRequestedFor(urlEqualTo("/private/transactions/987654")));
+        verify(count, getRequestedFor(urlEqualTo("/private/transactions/021787-298317-763347")));
     }
 
-    protected static void verifyKafkaApiRequest(int count) {
-        verify(count, postRequestedFor(urlEqualTo("/message-send")));
+    protected static void verifyKafkaApiRequest(int count, String filename) throws IOException {
+        if (StringUtils.isBlank(filename)) {
+            verify(count, postRequestedFor(urlEqualTo("/message-send")));
+        } else {
+            String requestBody = IOUtils.resourceToString(filename, StandardCharsets.UTF_8);
+            verify(count, postRequestedFor(urlEqualTo("/message-send"))
+                    .withRequestBody(equalToJson(requestBody)));
+        }
     }
 }
