@@ -33,7 +33,7 @@ public class MessageSendDataMapper {
                 responseRecord.getCompanyNumber());
 
         MessageSendData data = new MessageSendData()
-                .chsURL(chsUrl)
+                .chsUrl(chsUrl)
                 .companyName(companyName)
                 .companyNumber(responseRecord.getCompanyNumber())
                 .filingDescription(mappedDescription)

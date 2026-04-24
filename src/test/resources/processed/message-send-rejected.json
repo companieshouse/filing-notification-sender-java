@@ -3,25 +3,20 @@
   "message_id": "<021787-298317-763347.12345@companieshouse.gov.uk>",
   "message_type": "filing_rejected_email",
   "data": {
-    "CompanyNumber": "15220419",
-    "CompanyName": "PSC VERIFICATION SECURITY TESTING LTD",
-    "FilingDate": null,
-    "FilingDescription": "Filing to provide identity verification details for a PSC",
-    "FilingType": null,
-    "IsDelete": null,
-    "ChsURL": "http://localhost:8889",
-    "MonitorURL": null,
-    "From": null,
-    "Subject": "Filing to provide identity verification details for a PSC rejected for PSC VERIFICATION SECURITY TESTING LTD (15220419)",
-    "To": "WoJPSpnEN_p8g1ENkLoA1VnFPQM",
-    "ProcessedAt": "16 April 2026",
-    "Status": "rejected",
-    "TransactionId": "021787-298317-763347",
-    "RejectReasonsEnglish": [
+    "company_number": "15220419",
+    "company_name": "PSC VERIFICATION SECURITY TESTING LTD",
+    "filing_description": "Filing to provide identity verification details for a PSC",
+    "chs_url": "http://localhost:8889",
+    "subject": "Filing to provide identity verification details for a PSC rejected for PSC VERIFICATION SECURITY TESTING LTD (15220419)",
+    "to": "WoJPSpnEN_p8g1ENkLoA1VnFPQM",
+    "processed_at": "16 April 2026",
+    "status": "rejected",
+    "transaction_id": "021787-298317-763347",
+    "reject_reasons_english": [
       "Incorrect document type",
       "Missing signature"
     ],
-    "RejectReasonsWelsh": [
+    "reject_reasons_welsh": [
       "Math o ddogfen anghywir",
       "Llofnod ar goll"
     ]

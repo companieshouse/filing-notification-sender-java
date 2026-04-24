@@ -32,7 +32,6 @@ import org.apache.avro.io.EncoderFactory;
 import org.apache.avro.reflect.ReflectDatumReader;
 import org.apache.avro.reflect.ReflectDatumWriter;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -94,7 +93,7 @@ public abstract class AbstractConsumerIT {
         testConsumer.poll(Duration.ofMillis(1000));
         WireMock.reset();
 
-        when(randomNumberGenerator.fiveDigitNumber()).thenReturn("12345");
+        when(randomNumberGenerator.random()).thenReturn("12345");
     }
 
     @DynamicPropertySource
@@ -163,13 +162,13 @@ public abstract class AbstractConsumerIT {
         verify(count, getRequestedFor(urlEqualTo("/private/transactions/021787-298317-763347")));
     }
 
-    protected static void verifyKafkaApiRequest(int count, String filename) throws IOException {
-        if (StringUtils.isBlank(filename)) {
-            verify(count, postRequestedFor(urlEqualTo("/message-send")));
-        } else {
-            String requestBody = IOUtils.resourceToString(filename, StandardCharsets.UTF_8);
-            verify(count, postRequestedFor(urlEqualTo("/message-send"))
-                    .withRequestBody(equalToJson(requestBody)));
-        }
+    protected static void verifyKafkaApiRequest(int count) {
+        verify(count, postRequestedFor(urlEqualTo("/message-send")));
+    }
+
+    protected static void verifyKafkaApiRequest(String requestBodyFilename) throws IOException {
+        String requestBody = IOUtils.resourceToString(requestBodyFilename, StandardCharsets.UTF_8);
+        verify(1, postRequestedFor(urlEqualTo("/message-send"))
+                .withRequestBody(equalToJson(requestBody, false, true)));
     }
 }

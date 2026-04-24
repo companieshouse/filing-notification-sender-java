@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.filing.processed;
 
-import java.io.IOException;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -27,7 +26,7 @@ class ConsumerNonRetryableExceptionIT extends AbstractFilingProcessedConsumerIT 
         // then
         assertExpectedRecordsPerTopic(0, 0, 1);
         verifyTransactionsApiRequest(1);
-        verifyKafkaApiRequest(0, "");
+        verifyKafkaApiRequest(0);
     }
 
     @Test
@@ -44,11 +43,11 @@ class ConsumerNonRetryableExceptionIT extends AbstractFilingProcessedConsumerIT 
         // then
         assertExpectedRecordsPerTopic(0, 0, 1);
         verifyTransactionsApiRequest(1);
-        verifyKafkaApiRequest(1, "");
+        verifyKafkaApiRequest(1);
     }
 
     @Test
-    void testPublishToFilingProcessedInvalidMessageTopicIfInvalidDataDeserialised() throws IOException {
+    void testPublishToFilingProcessedInvalidMessageTopicIfInvalidDataDeserialised() {
         // given
         byte[] message = writePayloadToBytes("bad data", String.class);
 
@@ -58,6 +57,6 @@ class ConsumerNonRetryableExceptionIT extends AbstractFilingProcessedConsumerIT 
         // then
         assertExpectedRecordsPerTopic(0, 0, 1);
         verifyTransactionsApiRequest(0);
-        verifyKafkaApiRequest(0, "");
+        verifyKafkaApiRequest(0);
     }
 }

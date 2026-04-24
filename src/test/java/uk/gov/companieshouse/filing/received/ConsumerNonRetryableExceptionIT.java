@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.filing.received;
 
-import java.io.IOException;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -27,7 +26,7 @@ class ConsumerNonRetryableExceptionIT extends AbstractFilingReceivedConsumerIT {
         // then
         assertExpectedRecordsPerTopic(0, 0, 1);
         verifyTransactionsApiRequest(1);
-        verifyKafkaApiRequest(0, "");
+        verifyKafkaApiRequest(0);
     }
 
     @Test
@@ -44,11 +43,11 @@ class ConsumerNonRetryableExceptionIT extends AbstractFilingReceivedConsumerIT {
         // then
         assertExpectedRecordsPerTopic(0, 0, 1);
         verifyTransactionsApiRequest(1);
-        verifyKafkaApiRequest(1, ""); // Check whether the item is skipped or if the whole message should be retried
+        verifyKafkaApiRequest(1); // Check whether the item is skipped or if the whole message should be retried
     }
 
     @Test
-    void testPublishToFilingReceivedInvalidMessageTopicIfInvalidDataDeserialised() throws IOException {
+    void testPublishToFilingReceivedInvalidMessageTopicIfInvalidDataDeserialised() {
         // given
         byte[] message = writePayloadToBytes("bad data", String.class);
 
@@ -58,6 +57,6 @@ class ConsumerNonRetryableExceptionIT extends AbstractFilingReceivedConsumerIT {
         // then
         assertExpectedRecordsPerTopic(0, 0, 1);
         verifyTransactionsApiRequest(0);
-        verifyKafkaApiRequest(0, "");
+        verifyKafkaApiRequest(0);
     }
 }

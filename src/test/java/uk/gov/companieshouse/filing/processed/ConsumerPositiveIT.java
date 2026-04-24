@@ -27,7 +27,7 @@ class ConsumerPositiveIT extends AbstractFilingProcessedConsumerIT {
         // then
         assertExpectedRecordsPerTopic(0, 0, 0);
         verifyTransactionsApiRequest(1);
-        verifyKafkaApiRequest(1, MESSAGE_SEND_ACCEPTED_PATH);
+        verifyKafkaApiRequest(MESSAGE_SEND_ACCEPTED_PATH);
     }
 
     @Test
@@ -44,6 +44,6 @@ class ConsumerPositiveIT extends AbstractFilingProcessedConsumerIT {
         // then
         assertExpectedRecordsPerTopic(0, 0, 0);
         verifyTransactionsApiRequest(1);
-        verifyKafkaApiRequest(1, MESSAGE_SEND_REJECTED_PATH);
+        verifyKafkaApiRequest(MESSAGE_SEND_REJECTED_PATH);
     }
 }

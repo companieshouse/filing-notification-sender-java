@@ -29,7 +29,7 @@ public class FilingProcessedMapper {
         ResponseRecord responseRecord = payload.getResponse();
         String originalDesc = transaction.getFilings().get(responseRecord.getSubmissionId()).getDescription();
 
-        DescriptionTemplate descriptionTemplate = descriptionTemplateMapper.mapDescriptionTemplate(originalDesc);
+        DescriptionTemplate descriptionTemplate = descriptionTemplateMapper.mapDescriptionTemplates(originalDesc);
 
         String appId;
         String messageType;
@@ -42,8 +42,8 @@ public class FilingProcessedMapper {
             messageType = descriptionTemplate.rejectedTemplate();
         }
 
-        String randomSixDigits = randomNumberGenerator.fiveDigitNumber();
-        String messageId = "<" + payload.getSubmission().getTransactionId() + "." + randomSixDigits + EMAIL_SUFFIX;
+        String randomNumber = randomNumberGenerator.random();
+        String messageId = "<" + payload.getSubmission().getTransactionId() + "." + randomNumber + EMAIL_SUFFIX;
 
         MessageSendData data = messageSendDataMapper.map(transaction, originalDesc, payload,
                 descriptionTemplate.mappedDescription());

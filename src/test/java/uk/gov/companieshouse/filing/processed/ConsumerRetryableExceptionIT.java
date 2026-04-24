@@ -26,7 +26,7 @@ class ConsumerRetryableExceptionIT extends AbstractFilingProcessedConsumerIT {
         // then
         assertExpectedRecordsPerTopic(4, 1, 0);
         verifyTransactionsApiRequest(5);
-        verifyKafkaApiRequest(0, "");
+        verifyKafkaApiRequest(0);
     }
 
     @Test
@@ -43,6 +43,6 @@ class ConsumerRetryableExceptionIT extends AbstractFilingProcessedConsumerIT {
         // then
         assertExpectedRecordsPerTopic(4, 1, 0);
         verifyTransactionsApiRequest(5);
-        verifyKafkaApiRequest(5, "");
+        verifyKafkaApiRequest(5);
     }
 }

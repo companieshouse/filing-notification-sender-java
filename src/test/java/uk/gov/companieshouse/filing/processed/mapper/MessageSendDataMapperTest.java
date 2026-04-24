@@ -102,7 +102,7 @@ class MessageSendDataMapperTest {
 
     private static MessageSendData buildMessageSendData(String companyName, String status) {
         MessageSendData data = new MessageSendData();
-        data.chsURL(CHS_URL);
+        data.chsUrl(CHS_URL);
         data.companyName(companyName);
         data.companyNumber("12345678");
         data.filingDescription("mappedDesc");

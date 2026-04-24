@@ -39,9 +39,9 @@ class FilingProcessedMapperTest {
         FilingProcessed payload = buildPayload("accepted");
         Transaction transaction = buildTransaction();
 
-        when(descriptionTemplateMapper.mapDescriptionTemplate(any()))
+        when(descriptionTemplateMapper.mapDescriptionTemplates(any()))
                 .thenReturn(new DescriptionTemplate("mappedDesc", "acceptTemp", "rejectTemp"));
-        when(randomNumberGenerator.fiveDigitNumber()).thenReturn("12345");
+        when(randomNumberGenerator.random()).thenReturn("12345");
         when(messageSendDataMapper.map(any(), any(), any(), any())).thenReturn(new MessageSendData());
 
         MessageSend expected = buildMessageSend("acceptTemp");
@@ -51,8 +51,8 @@ class FilingProcessedMapperTest {
 
         // then
         assertEquals(expected, actual);
-        verify(descriptionTemplateMapper).mapDescriptionTemplate("originalDesc");
-        verify(randomNumberGenerator).fiveDigitNumber();
+        verify(descriptionTemplateMapper).mapDescriptionTemplates("originalDesc");
+        verify(randomNumberGenerator).random();
         verify(messageSendDataMapper).map(transaction, "originalDesc", payload, "mappedDesc");
     }
 
@@ -62,9 +62,9 @@ class FilingProcessedMapperTest {
         FilingProcessed payload = buildPayload("rejected");
         Transaction transaction = buildTransaction();
 
-        when(descriptionTemplateMapper.mapDescriptionTemplate(any()))
+        when(descriptionTemplateMapper.mapDescriptionTemplates(any()))
                 .thenReturn(new DescriptionTemplate("mappedDesc", "acceptTemp", "rejectTemp"));
-        when(randomNumberGenerator.fiveDigitNumber()).thenReturn("12345");
+        when(randomNumberGenerator.random()).thenReturn("12345");
         when(messageSendDataMapper.map(any(), any(), any(), any())).thenReturn(new MessageSendData());
 
         MessageSend expected = buildMessageSend("rejectTemp");
@@ -74,8 +74,8 @@ class FilingProcessedMapperTest {
 
         // then
         assertEquals(expected, actual);
-        verify(descriptionTemplateMapper).mapDescriptionTemplate("originalDesc");
-        verify(randomNumberGenerator).fiveDigitNumber();
+        verify(descriptionTemplateMapper).mapDescriptionTemplates("originalDesc");
+        verify(randomNumberGenerator).random();
         verify(messageSendDataMapper).map(transaction, "originalDesc", payload, "mappedDesc");
     }
 
