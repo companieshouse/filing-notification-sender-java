@@ -5,6 +5,7 @@ import uk.gov.companieshouse.filing.common.AbstractConsumerIT;
 
 abstract class AbstractFilingProcessedConsumerIT extends AbstractConsumerIT {
 
+    static final String TRANSACTIONS_API_RESPONSE_PATH = "/processed/transaction-response.json";
     static final String FILING_PROCESSED_ACCEPTED_PATH = "/processed/filing-processed-accepted.json";
     static final String FILING_PROCESSED_REJECTED_PATH = "/processed/filing-processed-rejected.json";
     static final String MESSAGE_SEND_ACCEPTED_PATH = "/processed/message-send-accepted.json";

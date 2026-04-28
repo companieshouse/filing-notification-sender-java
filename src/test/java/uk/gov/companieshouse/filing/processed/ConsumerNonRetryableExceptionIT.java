@@ -34,7 +34,7 @@ class ConsumerNonRetryableExceptionIT extends AbstractFilingProcessedConsumerIT 
         // given
         byte[] message = buildFilingProcessedAcceptedBytes();
 
-        stubTransactionsApiResponse(200);
+        stubTransactionsApiResponse(TRANSACTIONS_API_RESPONSE_PATH);
         stubKafkaApiResponse(400);
 
         // when

@@ -47,6 +47,7 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.kafka.ConfluentKafkaContainer;
+import uk.gov.companieshouse.filing.common.mapper.RandomNumberGenerator;
 
 @WireMockTest(httpPort = 8889)
 @Import(TestKafkaConfig.class)
@@ -119,18 +120,18 @@ public abstract class AbstractConsumerIT {
         }
     }
 
-    protected static void stubTransactionsApiResponse(int statusCode) throws IOException {
-        if (statusCode != 200) {
-            stubFor(get("/private/transactions/021787-298317-763347")
-                    .willReturn(aResponse()
-                            .withStatus(statusCode)));
-        } else {
-            String response = IOUtils.resourceToString("/processed/transaction-response.json", StandardCharsets.UTF_8);
-            stubFor(get("/private/transactions/021787-298317-763347")
-                    .willReturn(aResponse()
-                            .withStatus(statusCode)
-                            .withBody(response)));
-        }
+    protected static void stubTransactionsApiResponse(int statusCode) {
+        stubFor(get("/private/transactions/021787-298317-763347")
+                .willReturn(aResponse()
+                        .withStatus(statusCode)));
+    }
+
+    protected static void stubTransactionsApiResponse(String filename) throws IOException {
+        String response = IOUtils.resourceToString(filename, StandardCharsets.UTF_8);
+        stubFor(get("/private/transactions/021787-298317-763347")
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withBody(response)));
     }
 
     protected static void stubKafkaApiResponse(int statusCode) {
@@ -166,9 +167,9 @@ public abstract class AbstractConsumerIT {
         verify(count, postRequestedFor(urlEqualTo("/message-send")));
     }
 
-    protected static void verifyKafkaApiRequest(String requestBodyFilename) throws IOException {
+    protected static void verifyKafkaApiRequest(int count, String requestBodyFilename) throws IOException {
         String requestBody = IOUtils.resourceToString(requestBodyFilename, StandardCharsets.UTF_8);
-        verify(1, postRequestedFor(urlEqualTo("/message-send"))
+        verify(count, postRequestedFor(urlEqualTo("/message-send"))
                 .withRequestBody(equalToJson(requestBody, false, true)));
     }
 }

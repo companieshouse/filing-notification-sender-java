@@ -1,0 +1,18 @@
+{
+  "app_id": "filing_received_notification_sender.filing_received_email",
+  "message_id": "<021787-298317-763347.12345@companieshouse.gov.uk>",
+  "message_type": "filing_received_email",
+  "data": {
+    "company_number": "15220419",
+    "company_name": "PSC VERIFICATION SECURITY TESTING LTD",
+    "filing_description": "Filing to provide identity verification details for a PSC",
+    "chs_url": "http://localhost:8889",
+    "subject": "Filing to provide identity verification details for a PSC received for PSC VERIFICATION SECURITY TESTING LTD (15220419)",
+    "to": "WoJPSpnEN_p8g1ENkLoA1VnFPQM",
+    "transaction_id": "021787-298317-763347",
+    "received_at_date": "16 April 2026",
+    "received_at_time": "11:19am"
+  },
+  "user_id": "WoJPSpnEN_p8g1ENkLoA1VnFPQM",
+  "created_at": "2026-04-16T10:20:26"
+}

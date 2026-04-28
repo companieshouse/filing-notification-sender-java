@@ -3,7 +3,7 @@ package uk.gov.companieshouse.filing.processed.mapper;
 import org.springframework.stereotype.Component;
 
 @Component
-public class DescriptionTemplateMapper {
+public class FilingProcessedTemplateMapper {
 
     DescriptionTemplate mapDescriptionTemplates(String description) {
         return switch (description) {
