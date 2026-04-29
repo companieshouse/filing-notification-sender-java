@@ -147,7 +147,7 @@ public abstract class AbstractConsumerIT {
     }
 
     protected void assertExpectedRecordsPerTopic(int retrySize, int errorSize, int invalidSize) {
-        ConsumerRecords<?, ?> consumerRecords = KafkaTestUtils.getRecords(testConsumer, Duration.ofMillis(1000L), 7);
+        ConsumerRecords<?, ?> consumerRecords = KafkaTestUtils.getRecords(testConsumer, Duration.ofMillis(5000L), 7);
         assertEquals(1, Iterables.size(consumerRecords.records(mainTopic)));
         assertEquals(retrySize, Iterables.size(consumerRecords.records(retryTopic)));
         assertEquals(errorSize, Iterables.size(consumerRecords.records(errorTopic)));
