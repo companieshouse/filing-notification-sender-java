@@ -36,7 +36,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
@@ -46,17 +45,18 @@ import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.kafka.ConfluentKafkaContainer;
 import uk.gov.companieshouse.filing.common.mapper.RandomNumberGenerator;
 
 @WireMockTest(httpPort = 8889)
 @Import(TestKafkaConfig.class)
+@Testcontainers
 public abstract class AbstractConsumerIT {
 
-    // Container reuse dramatically speeds up test execution
-    // Warnings like "you must set 'testcontainers.reuse.enable=true'" are false positives
-    protected static final ConfluentKafkaContainer kafka = new ConfluentKafkaContainer("confluentinc/cp-kafka:latest")
-            .withReuse(true);
+    @Container
+    private static final ConfluentKafkaContainer kafka = new ConfluentKafkaContainer("confluentinc/cp-kafka:latest");
     private static final String GROUP = "filing-notification-sender";
 
     @MockitoBean
@@ -78,11 +78,6 @@ public abstract class AbstractConsumerIT {
         this.retryTopic = "%s-%s-retry".formatted(mainTopic, GROUP);
         this.errorTopic = "%s-%s-error".formatted(mainTopic, GROUP);
         this.invalidTopic = "%s-%s-invalid".formatted(mainTopic, GROUP);
-    }
-
-    @BeforeAll
-    static void beforeAll() {
-        kafka.start();
     }
 
     @BeforeEach
