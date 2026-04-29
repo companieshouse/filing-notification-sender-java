@@ -16,7 +16,7 @@ class ConsumerNonRetryableExceptionIT extends AbstractFilingProcessedConsumerIT 
     @Test
     void testRepublishToFilingProcessedInvalidMessageTopicWhenTransactionsApiNonRetryableErrorResponse() throws Exception {
         // given
-        byte[] message = writePayloadToBytes(buildFilingProcessed(), FilingProcessed.class);
+        byte[] message = buildFilingProcessedAcceptedBytes();
 
         stubTransactionsApiResponse(400);
 
@@ -32,7 +32,7 @@ class ConsumerNonRetryableExceptionIT extends AbstractFilingProcessedConsumerIT 
     @Test
     void testRepublishToFilingProcessedInvalidMessageTopicWhenKafkaApiNonRetryableErrorResponse() throws Exception {
         // given
-        byte[] message = writePayloadToBytes(buildFilingProcessed(), FilingProcessed.class);
+        byte[] message = buildFilingProcessedAcceptedBytes();
 
         stubTransactionsApiResponse(200);
         stubKafkaApiResponse(400);

@@ -14,9 +14,9 @@ class ConsumerPositiveIT extends AbstractFilingProcessedConsumerIT {
     }
 
     @Test
-    void shouldConsumeFilingProcessedMessagesAndProcessSuccessfully() throws Exception {
+    void shouldConsumeFilingProcessedMessageAcceptedAndProcessSuccessfully() throws Exception {
         // given
-        byte[] message = writePayloadToBytes(buildFilingProcessed(), FilingProcessed.class);
+        byte[] message = buildFilingProcessedAcceptedBytes();
 
         stubTransactionsApiResponse(200);
         stubKafkaApiResponse(200);
@@ -27,6 +27,23 @@ class ConsumerPositiveIT extends AbstractFilingProcessedConsumerIT {
         // then
         assertExpectedRecordsPerTopic(0, 0, 0);
         verifyTransactionsApiRequest(1);
-        verifyKafkaApiRequest(1);
+        verifyKafkaApiRequest(MESSAGE_SEND_ACCEPTED_PATH);
+    }
+
+    @Test
+    void shouldConsumeFilingProcessedMessageRejectedAndProcessSuccessfully() throws Exception {
+        // given
+        byte[] message = buildFilingProcessedRejectedBytes();
+
+        stubTransactionsApiResponse(200);
+        stubKafkaApiResponse(200);
+
+        // when
+        publishAndAwaitConsumerLatch(message, 10);
+
+        // then
+        assertExpectedRecordsPerTopic(0, 0, 0);
+        verifyTransactionsApiRequest(1);
+        verifyKafkaApiRequest(MESSAGE_SEND_REJECTED_PATH);
     }
 }

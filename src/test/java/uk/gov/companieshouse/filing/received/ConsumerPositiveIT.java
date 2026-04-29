@@ -14,7 +14,7 @@ class ConsumerPositiveIT extends AbstractFilingReceivedConsumerIT {
     }
 
     @Test
-    void shouldConsumeFilingReceivedMessagesAndProcessSuccessfully() throws Exception {
+    void shouldConsumeFilingReceivedMessageAndProcessSuccessfully() throws Exception {
         // given
         byte[] message = writePayloadToBytes(buildFilingReceived(), FilingReceived.class);
 
