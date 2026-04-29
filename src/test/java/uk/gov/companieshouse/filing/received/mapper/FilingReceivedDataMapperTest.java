@@ -7,8 +7,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.chskafka.MessageSendData;
@@ -32,62 +33,25 @@ class FilingReceivedDataMapperTest {
         mapper = new FilingReceivedDataMapper(CHS_URL, dateMapper);
     }
 
-    @Test
-    void shouldMapMessageSendData() {
+    @ParameterizedTest
+    @CsvSource({
+            "kind, originalDesc, transactionCompanyName",
+            "kind, insolvency original desc, submissionCompanyName",
+            "registered-office-address#LIQAD01, originalDesc, submissionCompanyName"
+    })
+    void shouldMapMessageSendDataVaryingCompanyNames(String kind, String originalDescription, String expectedCompanyName) {
         // given
         Transaction transaction = buildTransaction();
-        uk.gov.companieshouse.filing.received.Transaction item = buildItem("kind");
+        uk.gov.companieshouse.filing.received.Transaction item = buildItem(kind);
         FilingReceived payload = buildPayload();
 
         when(dateMapper.formatFullMonth(any(), anyBoolean())).thenReturn("20 April 2026");
         when(dateMapper.formatTimePeriod(any())).thenReturn("12:30pm");
 
-        MessageSendData expected = buildMessageSendData("transactionCompanyName");
+        MessageSendData expected = buildMessageSendData(expectedCompanyName);
 
         // when
-        MessageSendData actual = mapper.map(transaction, "originalDesc", payload, "mappedDesc", item);
-
-        // then
-        assertEquals(expected, actual);
-        verify(dateMapper).formatFullMonth("2026-04-20", true);
-        verify(dateMapper).formatTimePeriod("2026-04-20T12:30:00Z");
-    }
-
-    @Test
-    void shouldMapMessageSendDataAcceptedVaryingCompanyNames() {
-        // given
-        Transaction transaction = buildTransaction();
-        uk.gov.companieshouse.filing.received.Transaction item = buildItem("kind");
-        FilingReceived payload = buildPayload();
-
-        when(dateMapper.formatFullMonth(any(), anyBoolean())).thenReturn("20 April 2026");
-        when(dateMapper.formatTimePeriod(any())).thenReturn("12:30pm");
-
-        MessageSendData expected = buildMessageSendData("submissionCompanyName");
-
-        // when
-        MessageSendData actual = mapper.map(transaction, "insolvency original desc", payload, "mappedDesc", item);
-
-        // then
-        assertEquals(expected, actual);
-        verify(dateMapper).formatFullMonth("2026-04-20", true);
-        verify(dateMapper).formatTimePeriod("2026-04-20T12:30:00Z");
-    }
-
-    @Test
-    void shouldMapMessageSendDataKindROA() {
-        // given
-        Transaction transaction = buildTransaction();
-        uk.gov.companieshouse.filing.received.Transaction item = buildItem("registered-office-address#LIQAD01");
-        FilingReceived payload = buildPayload();
-
-        when(dateMapper.formatFullMonth(any(), anyBoolean())).thenReturn("20 April 2026");
-        when(dateMapper.formatTimePeriod(any())).thenReturn("12:30pm");
-
-        MessageSendData expected = buildMessageSendData("submissionCompanyName");
-
-        // when
-        MessageSendData actual = mapper.map(transaction, "originalDesc", payload, "mappedDesc", item);
+        MessageSendData actual = mapper.map(transaction, originalDescription, payload, "mappedDesc", item);
 
         // then
         assertEquals(expected, actual);
