@@ -43,7 +43,8 @@ public class DateMapper {
         try {
             return Instant.parse(unformattedDate)
                     .atZone(ZoneId.of("Europe/London"))
-                    .format(TWELVE_HOUR_PERIOD_FORMATTER);
+                    .format(TWELVE_HOUR_PERIOD_FORMATTER)
+                    .toLowerCase();
         } catch (DateTimeParseException ex) {
             LOGGER.error("Error parsing date: [%s]".formatted(unformattedDate), ex);
             throw new InvalidPayloadException("Invalid date format", ex);
