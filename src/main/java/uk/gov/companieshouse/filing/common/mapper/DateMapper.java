@@ -29,9 +29,9 @@ public class DateMapper {
             int year = date.getYear();
 
             if (doubleDigitDay) {
-                return String.format("%02d %s %d", day, fullMonth, year);
+                return "%02d %s %d".formatted(day, fullMonth, year);
             } else {
-                return String.format("%d %s %d", day, fullMonth, year);
+                return "%d %s %d".formatted(day, fullMonth, year);
             }
         } catch (DateTimeParseException ex) {
             LOGGER.error("Error parsing date: [%s]".formatted(unformattedDate), ex);
