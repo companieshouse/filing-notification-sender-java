@@ -1,0 +1,35 @@
+{
+  "application_id": "6309912450514.apps.ch.gov.uk",
+  "attempt": 0,
+  "channel_id": {
+    "string": "chs"
+  },
+  "presenter": {
+    "forename": null,
+    "language": "en",
+    "surname": null,
+    "user_id": "WoJPSpnEN_p8g1ENkLoA1VnFPQM"
+  },
+  "submission": {
+    "company_number": {
+      "string": "15220419"
+    },
+    "company_name": "PSC VERIFICATION SECURITY TESTING LTD",
+    "received_at": "2026-04-16T10:19:45Z",
+    "transaction_id": "021787-298317-763347"
+  },
+  "items": [
+    {
+      "data": "{\"appointment_id\":\"4000007973\",\"company_number\":\"15220419\",\"verification_details\":{\"uvid\":\"XXTLR832223\",\"verification_statements\":[\"INDIVIDUAL_VERIFIED\"]}}",
+      "kind": "psc-verification#psc-verification-individual",
+      "submission_language": "en",
+      "submission_id": "021787-298317-763347-1"
+    },
+    {
+      "data": "{\"appointment_id\":\"4000007974\",\"company_number\":\"15220419\",\"verification_details\":{\"uvid\":\"XXTLR832224\",\"verification_statements\":[\"INDIVIDUAL_VERIFIED\"]}}",
+      "kind": "psc-verification#psc-verification-individual",
+      "submission_language": "en",
+      "submission_id": "021787-298317-763347-2"
+    }
+  ]
+}

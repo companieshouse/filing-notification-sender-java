@@ -2,6 +2,7 @@ package uk.gov.companieshouse.filing.processed.mapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -15,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.chskafka.MessageSendData;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
+import uk.gov.companieshouse.filing.common.mapper.DateMapper;
 import uk.gov.companieshouse.filing.processed.FilingProcessed;
 import uk.gov.companieshouse.filing.processed.PresenterRecord;
 import uk.gov.companieshouse.filing.processed.RejectRecord;
@@ -22,17 +24,17 @@ import uk.gov.companieshouse.filing.processed.ResponseRecord;
 import uk.gov.companieshouse.filing.processed.SubmissionRecord;
 
 @ExtendWith(MockitoExtension.class)
-class MessageSendDataMapperTest {
+class FilingProcessedDataMapperTest {
 
     private static final String CHS_URL = "http://chs-url";
 
-    private MessageSendDataMapper mapper;
+    private FilingProcessedDataMapper mapper;
     @Mock
     private DateMapper dateMapper;
 
     @BeforeEach
     void setUp() {
-        mapper = new MessageSendDataMapper(CHS_URL, dateMapper);
+        mapper = new FilingProcessedDataMapper(CHS_URL, dateMapper);
     }
 
     @Test
@@ -45,7 +47,7 @@ class MessageSendDataMapperTest {
         reject.setReasonsWelsh(List.of("rheswm1", "rheswm2"));
         payload.getResponse().setReject(reject);
 
-        when(dateMapper.formatFullMonth(any())).thenReturn("20 April 2026");
+        when(dateMapper.formatFullMonth(any(), anyBoolean())).thenReturn("20 April 2026");
 
         MessageSendData expected = buildMessageSendData("transactionCompanyName", "rejected");
         expected.rejectReasonsEnglish(List.of("reason1", "reason2"));
@@ -56,7 +58,7 @@ class MessageSendDataMapperTest {
 
         // then
         assertEquals(expected, actual);
-        verify(dateMapper).formatFullMonth("2026-04-20");
+        verify(dateMapper).formatFullMonth("2026-04-20", false);
     }
 
     @ParameterizedTest
@@ -70,7 +72,7 @@ class MessageSendDataMapperTest {
         Transaction transaction = buildTransaction();
         FilingProcessed payload = buildPayload("accepted");
 
-        when(dateMapper.formatFullMonth(any())).thenReturn("20 April 2026");
+        when(dateMapper.formatFullMonth(any(), anyBoolean())).thenReturn("20 April 2026");
 
         MessageSendData expected = buildMessageSendData(expectedCompanyName, "accepted");
 
@@ -79,7 +81,7 @@ class MessageSendDataMapperTest {
 
         // then
         assertEquals(expected, actual);
-        verify(dateMapper).formatFullMonth("2026-04-20");
+        verify(dateMapper).formatFullMonth("2026-04-20", false);
     }
 
     @Test
@@ -88,7 +90,7 @@ class MessageSendDataMapperTest {
         Transaction transaction = new Transaction();
         FilingProcessed payload = buildPayload("accepted");
 
-        when(dateMapper.formatFullMonth(any())).thenReturn("20 April 2026");
+        when(dateMapper.formatFullMonth(any(), anyBoolean())).thenReturn("20 April 2026");
 
         MessageSendData expected = buildMessageSendData("responseCompanyName", "accepted");
 
@@ -97,7 +99,7 @@ class MessageSendDataMapperTest {
 
         // then
         assertEquals(expected, actual);
-        verify(dateMapper).formatFullMonth("2026-04-20");
+        verify(dateMapper).formatFullMonth("2026-04-20", false);
     }
 
     private static MessageSendData buildMessageSendData(String companyName, String status) {

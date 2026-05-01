@@ -36,7 +36,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
@@ -46,16 +45,18 @@ import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.kafka.ConfluentKafkaContainer;
+import uk.gov.companieshouse.filing.common.mapper.RandomNumberGenerator;
 
 @WireMockTest(httpPort = 8889)
 @Import(TestKafkaConfig.class)
+@Testcontainers
 public abstract class AbstractConsumerIT {
 
-    // Container reuse dramatically speeds up test execution
-    // Warnings like "you must set 'testcontainers.reuse.enable=true'" are false positives
-    protected static final ConfluentKafkaContainer kafka = new ConfluentKafkaContainer("confluentinc/cp-kafka:latest")
-            .withReuse(true);
+    @Container
+    private static final ConfluentKafkaContainer kafka = new ConfluentKafkaContainer("confluentinc/cp-kafka:latest");
     private static final String GROUP = "filing-notification-sender";
 
     @MockitoBean
@@ -77,11 +78,6 @@ public abstract class AbstractConsumerIT {
         this.retryTopic = "%s-%s-retry".formatted(mainTopic, GROUP);
         this.errorTopic = "%s-%s-error".formatted(mainTopic, GROUP);
         this.invalidTopic = "%s-%s-invalid".formatted(mainTopic, GROUP);
-    }
-
-    @BeforeAll
-    static void beforeAll() {
-        kafka.start();
     }
 
     @BeforeEach
@@ -119,18 +115,18 @@ public abstract class AbstractConsumerIT {
         }
     }
 
-    protected static void stubTransactionsApiResponse(int statusCode) throws IOException {
-        if (statusCode != 200) {
-            stubFor(get("/private/transactions/021787-298317-763347")
-                    .willReturn(aResponse()
-                            .withStatus(statusCode)));
-        } else {
-            String response = IOUtils.resourceToString("/processed/transaction-response.json", StandardCharsets.UTF_8);
-            stubFor(get("/private/transactions/021787-298317-763347")
-                    .willReturn(aResponse()
-                            .withStatus(statusCode)
-                            .withBody(response)));
-        }
+    protected static void stubTransactionsApiResponse(int statusCode) {
+        stubFor(get("/private/transactions/021787-298317-763347")
+                .willReturn(aResponse()
+                        .withStatus(statusCode)));
+    }
+
+    protected static void stubTransactionsApiResponse(String filename) throws IOException {
+        String response = IOUtils.resourceToString(filename, StandardCharsets.UTF_8);
+        stubFor(get("/private/transactions/021787-298317-763347")
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withBody(response)));
     }
 
     protected static void stubKafkaApiResponse(int statusCode) {
@@ -151,7 +147,7 @@ public abstract class AbstractConsumerIT {
     }
 
     protected void assertExpectedRecordsPerTopic(int retrySize, int errorSize, int invalidSize) {
-        ConsumerRecords<?, ?> consumerRecords = KafkaTestUtils.getRecords(testConsumer, Duration.ofMillis(1000L), 7);
+        ConsumerRecords<?, ?> consumerRecords = KafkaTestUtils.getRecords(testConsumer, Duration.ofMillis(5000L), 7);
         assertEquals(1, Iterables.size(consumerRecords.records(mainTopic)));
         assertEquals(retrySize, Iterables.size(consumerRecords.records(retryTopic)));
         assertEquals(errorSize, Iterables.size(consumerRecords.records(errorTopic)));
@@ -166,9 +162,9 @@ public abstract class AbstractConsumerIT {
         verify(count, postRequestedFor(urlEqualTo("/message-send")));
     }
 
-    protected static void verifyKafkaApiRequest(String requestBodyFilename) throws IOException {
+    protected static void verifyKafkaApiRequest(int count, String requestBodyFilename) throws IOException {
         String requestBody = IOUtils.resourceToString(requestBodyFilename, StandardCharsets.UTF_8);
-        verify(1, postRequestedFor(urlEqualTo("/message-send"))
+        verify(count, postRequestedFor(urlEqualTo("/message-send"))
                 .withRequestBody(equalToJson(requestBody, false, true)));
     }
 }

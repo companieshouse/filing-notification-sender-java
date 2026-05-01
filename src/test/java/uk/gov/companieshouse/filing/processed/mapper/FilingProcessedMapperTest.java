@@ -15,7 +15,7 @@ import uk.gov.companieshouse.api.chskafka.MessageSend;
 import uk.gov.companieshouse.api.chskafka.MessageSendData;
 import uk.gov.companieshouse.api.model.transaction.Filing;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
-import uk.gov.companieshouse.filing.common.RandomNumberGenerator;
+import uk.gov.companieshouse.filing.common.mapper.RandomNumberGenerator;
 import uk.gov.companieshouse.filing.processed.FilingProcessed;
 import uk.gov.companieshouse.filing.processed.PresenterRecord;
 import uk.gov.companieshouse.filing.processed.ResponseRecord;
@@ -27,11 +27,11 @@ class FilingProcessedMapperTest {
     @InjectMocks
     private FilingProcessedMapper filingProcessedMapper;
     @Mock
-    private DescriptionTemplateMapper descriptionTemplateMapper;
+    private FilingProcessedTemplateMapper filingProcessedTemplateMapper;
     @Mock
     private RandomNumberGenerator randomNumberGenerator;
     @Mock
-    private MessageSendDataMapper messageSendDataMapper;
+    private FilingProcessedDataMapper filingProcessedDataMapper;
 
     @Test
     void shouldMapAcceptedFilingProcessedAndTransactionToMessageSend() {
@@ -39,10 +39,10 @@ class FilingProcessedMapperTest {
         FilingProcessed payload = buildPayload("accepted");
         Transaction transaction = buildTransaction();
 
-        when(descriptionTemplateMapper.mapDescriptionTemplates(any()))
+        when(filingProcessedTemplateMapper.mapDescriptionTemplates(any()))
                 .thenReturn(new DescriptionTemplate("mappedDesc", "acceptTemp", "rejectTemp"));
         when(randomNumberGenerator.random()).thenReturn("12345");
-        when(messageSendDataMapper.map(any(), any(), any(), any())).thenReturn(new MessageSendData());
+        when(filingProcessedDataMapper.map(any(), any(), any(), any())).thenReturn(new MessageSendData());
 
         MessageSend expected = buildMessageSend("acceptTemp");
 
@@ -51,9 +51,9 @@ class FilingProcessedMapperTest {
 
         // then
         assertEquals(expected, actual);
-        verify(descriptionTemplateMapper).mapDescriptionTemplates("originalDesc");
+        verify(filingProcessedTemplateMapper).mapDescriptionTemplates("originalDesc");
         verify(randomNumberGenerator).random();
-        verify(messageSendDataMapper).map(transaction, "originalDesc", payload, "mappedDesc");
+        verify(filingProcessedDataMapper).map(transaction, "originalDesc", payload, "mappedDesc");
     }
 
     @Test
@@ -62,10 +62,10 @@ class FilingProcessedMapperTest {
         FilingProcessed payload = buildPayload("rejected");
         Transaction transaction = buildTransaction();
 
-        when(descriptionTemplateMapper.mapDescriptionTemplates(any()))
+        when(filingProcessedTemplateMapper.mapDescriptionTemplates(any()))
                 .thenReturn(new DescriptionTemplate("mappedDesc", "acceptTemp", "rejectTemp"));
         when(randomNumberGenerator.random()).thenReturn("12345");
-        when(messageSendDataMapper.map(any(), any(), any(), any())).thenReturn(new MessageSendData());
+        when(filingProcessedDataMapper.map(any(), any(), any(), any())).thenReturn(new MessageSendData());
 
         MessageSend expected = buildMessageSend("rejectTemp");
 
@@ -74,9 +74,9 @@ class FilingProcessedMapperTest {
 
         // then
         assertEquals(expected, actual);
-        verify(descriptionTemplateMapper).mapDescriptionTemplates("originalDesc");
+        verify(filingProcessedTemplateMapper).mapDescriptionTemplates("originalDesc");
         verify(randomNumberGenerator).random();
-        verify(messageSendDataMapper).map(transaction, "originalDesc", payload, "mappedDesc");
+        verify(filingProcessedDataMapper).map(transaction, "originalDesc", payload, "mappedDesc");
     }
 
     private static MessageSend buildMessageSend(String statusType) {

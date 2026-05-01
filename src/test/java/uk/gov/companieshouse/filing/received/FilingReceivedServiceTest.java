@@ -14,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.chskafka.MessageSend;
 import uk.gov.companieshouse.filing.common.client.KafkaApiClient;
 import uk.gov.companieshouse.filing.common.client.TransactionsApiClient;
+import uk.gov.companieshouse.filing.received.mapper.FilingReceivedMapper;
 
 @ExtendWith(MockitoExtension.class)
 class FilingReceivedServiceTest {

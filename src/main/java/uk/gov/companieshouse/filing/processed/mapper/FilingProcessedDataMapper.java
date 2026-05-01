@@ -5,23 +5,23 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.chskafka.MessageSendData;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
+import uk.gov.companieshouse.filing.common.mapper.DateMapper;
 import uk.gov.companieshouse.filing.processed.FilingProcessed;
 import uk.gov.companieshouse.filing.processed.RejectRecord;
 import uk.gov.companieshouse.filing.processed.ResponseRecord;
 
 @Component
-public class MessageSendDataMapper {
+public class FilingProcessedDataMapper {
 
     private final String chsUrl;
     private final DateMapper dateMapper;
 
-    public MessageSendDataMapper(@Value("${api.url.chs}") String chsUrl, DateMapper dateMapper) {
+    public FilingProcessedDataMapper(@Value("${api.url.chs}") String chsUrl, DateMapper dateMapper) {
         this.chsUrl = chsUrl;
         this.dateMapper = dateMapper;
     }
 
-    MessageSendData map(Transaction transaction, String originalDescription, FilingProcessed payload,
-            String mappedDescription) {
+    MessageSendData map(Transaction transaction, String originalDescription, FilingProcessed payload, String mappedDescription) {
         ResponseRecord responseRecord = payload.getResponse();
         String companyName = transaction.getCompanyName();
         if (originalDescription.contains("insolvency") ||
@@ -39,7 +39,7 @@ public class MessageSendDataMapper {
                 .filingDescription(mappedDescription)
                 .to(payload.getPresenter().getUserId())
                 .subject(subject)
-                .processedAt(dateMapper.formatFullMonth(responseRecord.getProcessedAt().substring(0, 10)))
+                .processedAt(dateMapper.formatFullMonth(responseRecord.getProcessedAt().substring(0, 10), false))
                 .status(responseRecord.getStatus())
                 .transactionId(payload.getSubmission().getTransactionId());
 

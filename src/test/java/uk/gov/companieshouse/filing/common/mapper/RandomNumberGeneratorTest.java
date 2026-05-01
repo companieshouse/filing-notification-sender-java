@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.filing.common;
+package uk.gov.companieshouse.filing.common.mapper;
 
 
 import static org.junit.jupiter.api.Assertions.assertTrue;

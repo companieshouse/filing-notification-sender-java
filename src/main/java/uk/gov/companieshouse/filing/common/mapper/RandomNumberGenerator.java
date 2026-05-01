@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.filing.common;
+package uk.gov.companieshouse.filing.common.mapper;
 
 import java.util.Random;
 import org.springframework.stereotype.Component;
