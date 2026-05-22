@@ -42,6 +42,9 @@
             </dependency>
             <!-- start fix versions for vulnerable transitive dependencies -->
             <!-- CVE-2026-41293-->
+            <!-- CVE-2026-41284-->
+            <!-- CVE-2026-42498-->
+            <!-- CVE-2026-43514-->
             <dependency>
                 <groupId>org.apache.tomcat.embed</groupId>
                 <artifactId>tomcat-embed-core</artifactId>
