@@ -49,7 +49,7 @@ public class FilingReceivedTemplateMapper {
     }
 
     private static DescriptionTemplate mapConfirmationStatementTemplates(String description, Transaction item) {
-        String template = "filing_received_confirmation_statement_submission_email";
+        String template = "filing_received_email_confirmation_statement";
         return new DescriptionTemplate(description, template);
     }
 
