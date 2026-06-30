@@ -37,6 +37,13 @@ class FilingReceivedTemplateMapperTest {
     }
 
     @Test
+    void mapsPackageAccountsOverseas() {
+        DescriptionTemplate actual = mapper.mapDescriptionTemplates("Package accounts with package type overseas", ITEM);
+        assertEquals("Package accounts with package type overseas", actual.mappedDescription());
+        assertEquals("filing_received_email_package_accounts_oversea", actual.template());
+    }
+
+    @Test
     void mapsAcspApplicationUpdate() {
         DescriptionTemplate actual = mapper.mapDescriptionTemplates("acsp application update", ITEM);
         assertEquals("acsp application update", actual.mappedDescription());
