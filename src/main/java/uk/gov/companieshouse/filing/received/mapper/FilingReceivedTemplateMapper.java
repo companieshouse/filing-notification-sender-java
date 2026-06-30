@@ -31,7 +31,13 @@ public class FilingReceivedTemplateMapper {
     }
 
     private static DescriptionTemplate mapPackageAccountsTemplates(String description) {
-        String template = "filing_received_email_package_accounts";
+        String template;
+        if (description.contains("oversea")) {
+            template = "filing_received_email_package_accounts_oversea";
+        }else{
+            template = "filing_received_email_package_accounts";
+        }
+
         return new DescriptionTemplate(description, template);
     }
 
