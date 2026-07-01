@@ -32,16 +32,12 @@ public class FilingProcessedTemplateMapper {
     }
 
     private static DescriptionTemplate mapPackageAccountsTemplates(String description) {
-        String acceptedTemplate;
-        String rejectedTemplate;
-        if (description.contains("oversea")) {
+String acceptedTemplate = "filing_accepted_package_accounts";
+String rejectedTemplate = "filing_rejected_package_accounts";
+if (description.contains("oversea")) {
             acceptedTemplate = "filing_accepted_package_accounts_oversea";
             rejectedTemplate = "filing_rejected_package_accounts_oversea";
-        }else{
-            acceptedTemplate = "filing_accepted_package_accounts";
-            rejectedTemplate = "filing_rejected_package_accounts";
         }
-
         return new DescriptionTemplate(description, acceptedTemplate, rejectedTemplate);
     }
 
