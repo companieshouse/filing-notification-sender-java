@@ -58,6 +58,14 @@ class FilingProcessedTemplateMapperTest {
     }
 
     @Test
+    void mapsPackageAccountsOversea() {
+        DescriptionTemplate actual = mapper.mapDescriptionTemplates("Package accounts with package type overseas");
+        assertEquals("Package accounts with package type overseas", actual.mappedDescription());
+        assertEquals("filing_accepted_package_accounts_oversea", actual.acceptedTemplate());
+        assertEquals("filing_rejected_package_accounts_oversea", actual.rejectedTemplate());
+    }
+
+    @Test
     void mapsRegisteredEmailAddress() {
         DescriptionTemplate actual = mapper.mapDescriptionTemplates("Registered Email Address change");
         assertEquals("Registered Email Address change", actual.mappedDescription());
