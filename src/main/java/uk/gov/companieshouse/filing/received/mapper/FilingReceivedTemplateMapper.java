@@ -10,6 +10,7 @@ public class FilingReceivedTemplateMapper {
         return switch (description) {
             case String desc when desc.contains("insolvency") -> mapInsolvencyDescriptionTemplates(description, item);
             case String desc when desc.contains("Package accounts") -> mapPackageAccountsTemplates(description);
+            case String desc when desc.contains("Confirmation statement") -> mapConfirmationStatementTemplates(description, item);
             case String desc when desc.toUpperCase().contains("ACSP APPLICATION") -> mapAcspTemplates(description);
             default -> mapDefaultTemplates(description);
         };
@@ -50,6 +51,11 @@ public class FilingReceivedTemplateMapper {
         } else {
             template = "filing_received_email_acsp_registration";
         }
+        return new DescriptionTemplate(description, template);
+    }
+
+    private static DescriptionTemplate mapConfirmationStatementTemplates(String description, Transaction item) {
+        String template = "filing_received_email_confirmation_statement";
         return new DescriptionTemplate(description, template);
     }
 

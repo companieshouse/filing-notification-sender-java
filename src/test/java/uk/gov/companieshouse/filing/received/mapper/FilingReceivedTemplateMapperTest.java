@@ -70,4 +70,12 @@ class FilingReceivedTemplateMapperTest {
         assertEquals("Some unrelated description", actual.mappedDescription());
         assertEquals("filing_received_email", actual.template());
     }
+
+    @Test
+    void mapsConfirmationStatement() {
+        final String DESCRIPTION = "Confirmation statement created 2026-06-01 blah blah blah";
+        DescriptionTemplate actual = mapper.mapDescriptionTemplates(DESCRIPTION, ITEM);
+        assertEquals(DESCRIPTION, actual.mappedDescription());
+        assertEquals("filing_received_email_confirmation_statement", actual.template());
+    }
 }
