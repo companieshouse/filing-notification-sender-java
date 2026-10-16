@@ -1,24 +1,23 @@
 package uk.gov.companieshouse.filing.received.mapper;
 
 import org.springframework.stereotype.Component;
+import uk.gov.companieshouse.filing.common.mapper.MapperUtils;
 import uk.gov.companieshouse.filing.received.Transaction;
 
-import java.util.Locale;
+import static uk.gov.companieshouse.filing.common.Constants.DISSOLUTION_DESCRIPTION;
+import static uk.gov.companieshouse.filing.common.Constants.DISSOLUTION_KIND_DS01;
+import static uk.gov.companieshouse.filing.common.Constants.DISSOLUTION_KIND_LLDS01;
+import static uk.gov.companieshouse.filing.common.Constants.FILING_RECEIVED_TEMPLATE_PREFIX;
 
 @Component
 public class FilingReceivedTemplateMapper {
-
-    private static final String TEMPLATE_PREFIX = "filing_received_email";
-    private static final String DISSOLUTION_DESCRIPTION = "Dissolution Transaction";
-    private static final String DISSOLUTION_KIND_DS01 = "ds01";
-    private static final String DISSOLUTION_KIND_LLDS01 = "llds01";
 
     DescriptionTemplate mapDescriptionTemplates(String description, Transaction item) {
         return switch (description) {
             case String desc when desc.contains("insolvency") -> mapInsolvencyDescriptionTemplates(description, item);
             case String desc when desc.contains("Package accounts") -> mapPackageAccountsTemplates(description);
             case String desc when desc.toUpperCase().contains("ACSP APPLICATION") -> mapAcspTemplates(description);
-            case String desc when desc.contains(DISSOLUTION_DESCRIPTION) -> mapDissolutionTemplates(description, item);
+            case String desc when desc.contains("Dissolution application") -> mapDissolutionTemplates(item);
             default -> mapDefaultTemplates(description);
         };
     }
@@ -61,27 +60,15 @@ public class FilingReceivedTemplateMapper {
         return new DescriptionTemplate(description, template);
     }
 
-    private static DescriptionTemplate mapDissolutionTemplates(String description, Transaction item) {
-        String templateSuffix = containsIgnoreCase(item.getKind(), DISSOLUTION_KIND_LLDS01)
+    private static DescriptionTemplate mapDissolutionTemplates(Transaction item) {
+        String templateSuffix = MapperUtils.containsIgnoreCase(item.getKind(), DISSOLUTION_KIND_LLDS01)
                 ? DISSOLUTION_KIND_LLDS01
                 : DISSOLUTION_KIND_DS01;
-        return new DescriptionTemplate(description, buildTemplateNameFor(templateSuffix));
+
+        return new DescriptionTemplate(DISSOLUTION_DESCRIPTION, MapperUtils.constructTemplateName(FILING_RECEIVED_TEMPLATE_PREFIX, templateSuffix));
     }
 
     private static DescriptionTemplate mapDefaultTemplates(String description) {
-        String template = "filing_received_email";
-        return new DescriptionTemplate(description, template);
-    }
-
-    private static String buildTemplateNameFor(String suffix) {
-        return "%s_%s".formatted(TEMPLATE_PREFIX, suffix);
-    }
-
-    private static boolean containsIgnoreCase(String s, String t) {
-        return normalize(s).contains(t.toLowerCase(Locale.ROOT));
-    }
-
-    private static String normalize(String s) {
-        return s == null ? "" : s.toLowerCase(Locale.ROOT);
+        return new DescriptionTemplate(description, FILING_RECEIVED_TEMPLATE_PREFIX);
     }
 }
