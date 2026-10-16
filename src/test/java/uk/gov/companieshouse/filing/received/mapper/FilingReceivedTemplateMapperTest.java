@@ -64,6 +64,20 @@ class FilingReceivedTemplateMapperTest {
         assertEquals("filing_received_email_acsp_registration", actual.template());
     }
 
+    @ParameterizedTest
+    @CsvSource({
+            "Dissolution Transaction, dissolution#ds01, filing_received_email_ds01",
+            "Dissolution Transaction, dissolution#llds01, filing_received_email_llds01",
+            "Dissolution Transaction, dissolution#lpds01, filing_received_email_ds01",
+    })
+    void mapsDissolutionTemplates(String description, String kind, String expectedTemplate) {
+        Transaction item = new Transaction();
+        item.setKind(kind);
+        DescriptionTemplate actual = mapper.mapDescriptionTemplates(description, item);
+        assertEquals("Dissolution Transaction", actual.mappedDescription());
+        assertEquals(expectedTemplate, actual.template());
+    }
+
     @Test
     void mapsDefault() {
         DescriptionTemplate actual = mapper.mapDescriptionTemplates("Some unrelated description", ITEM);
