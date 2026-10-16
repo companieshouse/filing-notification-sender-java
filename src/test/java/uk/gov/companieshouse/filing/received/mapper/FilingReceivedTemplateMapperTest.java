@@ -69,6 +69,7 @@ class FilingReceivedTemplateMapperTest {
             "Dissolution Transaction, dissolution#ds01, filing_received_email_ds01",
             "Dissolution Transaction, dissolution#llds01, filing_received_email_llds01",
             "Dissolution Transaction, dissolution#lpds01, filing_received_email_ds01",
+            "Dissolution Transaction, dissolution#DS01, filing_received_email_ds01"
     })
     void mapsDissolutionTemplates(String description, String kind, String expectedTemplate) {
         Transaction item = new Transaction();
