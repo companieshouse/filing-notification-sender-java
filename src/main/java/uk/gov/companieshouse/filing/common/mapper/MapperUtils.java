@@ -1,11 +1,12 @@
 package uk.gov.companieshouse.filing.common.mapper;
 
-import org.springframework.stereotype.Component;
-
 import java.util.Locale;
 
-@Component
 public class MapperUtils {
+
+    private MapperUtils() {
+    }
+
     public static String constructTemplateName(String prefix, String suffix) {
         return "%s_%s".formatted(prefix, suffix);
     }
