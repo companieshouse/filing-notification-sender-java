@@ -17,7 +17,7 @@ public class FilingReceivedTemplateMapper {
             case String desc when desc.contains("insolvency") -> mapInsolvencyDescriptionTemplates(description, item);
             case String desc when desc.contains("Package accounts") -> mapPackageAccountsTemplates(description);
             case String desc when desc.toUpperCase().contains("ACSP APPLICATION") -> mapAcspTemplates(description);
-            case String desc when desc.contains("Dissolution application") -> mapDissolutionTemplates(item);
+            case String desc when desc.contains(DISSOLUTION_DESCRIPTION) -> mapDissolutionTemplates(description, item);
             default -> mapDefaultTemplates(description);
         };
     }
@@ -60,12 +60,12 @@ public class FilingReceivedTemplateMapper {
         return new DescriptionTemplate(description, template);
     }
 
-    private static DescriptionTemplate mapDissolutionTemplates(Transaction item) {
+    private static DescriptionTemplate mapDissolutionTemplates(String description, Transaction item) {
         String templateSuffix = MapperUtils.containsIgnoreCase(item.getKind(), DISSOLUTION_KIND_LLDS01)
                 ? DISSOLUTION_KIND_LLDS01
                 : DISSOLUTION_KIND_DS01;
 
-        return new DescriptionTemplate(DISSOLUTION_DESCRIPTION, MapperUtils.constructTemplateName(FILING_RECEIVED_TEMPLATE_PREFIX, templateSuffix));
+        return new DescriptionTemplate(description, MapperUtils.constructTemplateName(FILING_RECEIVED_TEMPLATE_PREFIX, templateSuffix));
     }
 
     private static DescriptionTemplate mapDefaultTemplates(String description) {
