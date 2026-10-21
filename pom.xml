@@ -63,6 +63,16 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <!-- Overrides -->
+
+            <!-- CVE-2026-59949, CVE-2026-106449, CVE-2026-106451 and CVE-2026-106450 override for lz4-java, pulled in transitively -->
+            <dependency>
+                <groupId>at.yawk.lz4</groupId>
+                <artifactId>lz4-java</artifactId>
+                <version>1.12.0</version>
+            </dependency>
+
+            <!-- End of overrides -->
         </dependencies>
     </dependencyManagement>
     <dependencies>
