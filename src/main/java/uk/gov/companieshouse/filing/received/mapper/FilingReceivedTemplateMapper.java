@@ -4,13 +4,14 @@ import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.filing.common.mapper.MapperUtils;
 import uk.gov.companieshouse.filing.received.Transaction;
 
-import static uk.gov.companieshouse.filing.common.Constants.DISSOLUTION_DESCRIPTION;
-import static uk.gov.companieshouse.filing.common.Constants.DISSOLUTION_KIND_DS01;
-import static uk.gov.companieshouse.filing.common.Constants.DISSOLUTION_KIND_LLDS01;
-import static uk.gov.companieshouse.filing.common.Constants.FILING_RECEIVED_TEMPLATE_PREFIX;
+import static uk.gov.companieshouse.filing.common.mapper.Constants.DISSOLUTION_DESCRIPTION;
+import static uk.gov.companieshouse.filing.common.mapper.Constants.DISSOLUTION_KIND_DS01;
+import static uk.gov.companieshouse.filing.common.mapper.Constants.DISSOLUTION_KIND_LLDS01;
 
 @Component
 public class FilingReceivedTemplateMapper {
+
+    private static final String FILING_RECEIVED_TEMPLATE_PREFIX = "filing_received_email";
 
     DescriptionTemplate mapDescriptionTemplates(String description, Transaction item) {
         return switch (description) {
