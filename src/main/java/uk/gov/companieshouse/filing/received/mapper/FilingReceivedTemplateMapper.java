@@ -1,16 +1,24 @@
 package uk.gov.companieshouse.filing.received.mapper;
 
 import org.springframework.stereotype.Component;
+import uk.gov.companieshouse.filing.common.mapper.MapperUtils;
 import uk.gov.companieshouse.filing.received.Transaction;
+
+import static uk.gov.companieshouse.filing.common.mapper.Constants.DISSOLUTION_DESCRIPTION;
+import static uk.gov.companieshouse.filing.common.mapper.Constants.DISSOLUTION_KIND_DS01;
+import static uk.gov.companieshouse.filing.common.mapper.Constants.DISSOLUTION_KIND_LLDS01;
 
 @Component
 public class FilingReceivedTemplateMapper {
+
+    private static final String FILING_RECEIVED_TEMPLATE_PREFIX = "filing_received_email";
 
     DescriptionTemplate mapDescriptionTemplates(String description, Transaction item) {
         return switch (description) {
             case String desc when desc.contains("insolvency") -> mapInsolvencyDescriptionTemplates(description, item);
             case String desc when desc.contains("Package accounts") -> mapPackageAccountsTemplates(description);
             case String desc when desc.toUpperCase().contains("ACSP APPLICATION") -> mapAcspTemplates(description);
+            case String desc when desc.contains(DISSOLUTION_DESCRIPTION) -> mapDissolutionTemplates(description, item);
             default -> mapDefaultTemplates(description);
         };
     }
@@ -34,7 +42,7 @@ public class FilingReceivedTemplateMapper {
         String template;
         if (description.contains("oversea")) {
             template = "filing_received_email_package_accounts_oversea";
-        }else{
+        } else {
             template = "filing_received_email_package_accounts";
         }
 
@@ -53,8 +61,15 @@ public class FilingReceivedTemplateMapper {
         return new DescriptionTemplate(description, template);
     }
 
+    private static DescriptionTemplate mapDissolutionTemplates(String description, Transaction item) {
+        String templateSuffix = MapperUtils.containsIgnoreCase(item.getKind(), DISSOLUTION_KIND_LLDS01)
+                ? DISSOLUTION_KIND_LLDS01
+                : DISSOLUTION_KIND_DS01;
+
+        return new DescriptionTemplate(description, MapperUtils.constructTemplateName(FILING_RECEIVED_TEMPLATE_PREFIX, templateSuffix));
+    }
+
     private static DescriptionTemplate mapDefaultTemplates(String description) {
-        String template = "filing_received_email";
-        return new DescriptionTemplate(description, template);
+        return new DescriptionTemplate(description, FILING_RECEIVED_TEMPLATE_PREFIX);
     }
 }
