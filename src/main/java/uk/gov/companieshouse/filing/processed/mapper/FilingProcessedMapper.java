@@ -30,7 +30,7 @@ public class FilingProcessedMapper {
         ResponseRecord responseRecord = payload.getResponse();
         String originalDesc = transaction.getFilings().get(responseRecord.getSubmissionId()).getDescription();
 
-        DescriptionTemplate descriptionTemplate = filingProcessedTemplateMapper.mapDescriptionTemplates(originalDesc);
+        DescriptionTemplate descriptionTemplate = filingProcessedTemplateMapper.mapDescriptionTemplates(originalDesc, transaction);
 
         String appId;
         String messageType;

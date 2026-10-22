@@ -1,12 +1,5 @@
 package uk.gov.companieshouse.filing.received.mapper;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.time.LocalDateTime;
-import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -14,12 +7,19 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.chskafka.MessageSend;
 import uk.gov.companieshouse.api.chskafka.MessageSendData;
-import uk.gov.companieshouse.api.model.transaction.Filing;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.filing.common.mapper.RandomNumberGenerator;
+import uk.gov.companieshouse.filing.common.testdata.TransactionTestDataBuilder;
 import uk.gov.companieshouse.filing.received.FilingReceived;
 import uk.gov.companieshouse.filing.received.PresenterRecord;
 import uk.gov.companieshouse.filing.received.SubmissionRecord;
+
+import java.time.LocalDateTime;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class FilingReceivedMapperTest {
@@ -40,7 +40,7 @@ class FilingReceivedMapperTest {
         // given
         FilingReceived payload = buildPayload();
         uk.gov.companieshouse.filing.received.Transaction item = buildItem();
-        Transaction transaction = buildTransaction();
+        Transaction transaction = TransactionTestDataBuilder.aTransaction().withFilingDescription("submissionId", "originalDesc").build();
 
         when(filingReceivedTemplateMapper.mapDescriptionTemplates(any(), any()))
                 .thenReturn(new DescriptionTemplate("mappedDesc", "template"));
@@ -88,15 +88,5 @@ class FilingReceivedMapperTest {
         uk.gov.companieshouse.filing.received.Transaction item = new uk.gov.companieshouse.filing.received.Transaction();
         item.setSubmissionId("submissionId");
         return item;
-    }
-
-    private static Transaction buildTransaction() {
-        Filing filing = new Filing();
-        filing.setDescription("originalDesc");
-
-        Transaction transaction = new Transaction();
-        transaction.setFilings(Map.of("submissionId", filing));
-
-        return transaction;
     }
 }
