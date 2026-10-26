@@ -3,6 +3,7 @@ package uk.gov.companieshouse.filing.processed.mapper;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.chskafka.MessageSend;
 import uk.gov.companieshouse.api.chskafka.MessageSendData;
+import uk.gov.companieshouse.api.model.transaction.Filing;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.filing.common.mapper.RandomNumberGenerator;
 import uk.gov.companieshouse.filing.processed.FilingProcessed;
@@ -28,9 +29,10 @@ public class FilingProcessedMapper {
 
     public MessageSend map(FilingProcessed payload, Transaction transaction) {
         ResponseRecord responseRecord = payload.getResponse();
-        String originalDesc = transaction.getFilings().get(responseRecord.getSubmissionId()).getDescription();
+        Filing filing = transaction.getFilings().get(responseRecord.getSubmissionId());
+        String originalDesc = filing.getDescription();
 
-        DescriptionTemplate descriptionTemplate = filingProcessedTemplateMapper.mapDescriptionTemplates(originalDesc, transaction);
+        DescriptionTemplate descriptionTemplate = filingProcessedTemplateMapper.mapDescriptionTemplates(originalDesc, filing);
 
         String appId;
         String messageType;

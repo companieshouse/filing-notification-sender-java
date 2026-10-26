@@ -1,12 +1,11 @@
 package uk.gov.companieshouse.filing.processed.mapper;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import uk.gov.companieshouse.api.model.transaction.Transaction;
-import uk.gov.companieshouse.filing.common.testdata.TransactionTestDataBuilder;
+import uk.gov.companieshouse.api.model.transaction.Filing;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class FilingProcessedTemplateMapperTest {
 
@@ -14,8 +13,7 @@ class FilingProcessedTemplateMapperTest {
 
     @Test
     void mapsInsolvency600() {
-        Transaction transaction = TransactionTestDataBuilder.aTransaction().build();
-        DescriptionTemplate actual = mapper.mapDescriptionTemplates("Some insolvency 600", transaction);
+        DescriptionTemplate actual = mapper.mapDescriptionTemplates("Some insolvency 600", new Filing());
         assertEquals("Notice of appointment of liquidator in a creditors' voluntary winding up (600)",
                 actual.mappedDescription());
         assertEquals("filing_accepted_email_insolvency", actual.acceptedTemplate());
@@ -24,8 +22,7 @@ class FilingProcessedTemplateMapperTest {
 
     @Test
     void mapsInsolvencyLRESEX() {
-        Transaction transaction = TransactionTestDataBuilder.aTransaction().build();
-        DescriptionTemplate actual = mapper.mapDescriptionTemplates("insolvency LRESEX", transaction);
+        DescriptionTemplate actual = mapper.mapDescriptionTemplates("insolvency LRESEX", new Filing());
         assertEquals("Extraordinary resolution to wind up (LRESEX)", actual.mappedDescription());
         assertEquals("filing_accepted_email_insolvency", actual.acceptedTemplate());
         assertEquals("filing_rejected_email_insolvency", actual.rejectedTemplate());
@@ -33,8 +30,7 @@ class FilingProcessedTemplateMapperTest {
 
     @Test
     void mapsInsolvencyLIQ02() {
-        Transaction transaction = TransactionTestDataBuilder.aTransaction().build();
-        DescriptionTemplate actual = mapper.mapDescriptionTemplates("insolvency LIQ02", transaction);
+        DescriptionTemplate actual = mapper.mapDescriptionTemplates("insolvency LIQ02", new Filing());
         assertEquals("Notice of Statement of Affairs (LIQ02)", actual.mappedDescription());
         assertEquals("filing_accepted_email_insolvency", actual.acceptedTemplate());
         assertEquals("filing_rejected_email_insolvency", actual.rejectedTemplate());
@@ -42,8 +38,7 @@ class FilingProcessedTemplateMapperTest {
 
     @Test
     void mapsInsolvencyLIQ03() {
-        Transaction transaction = TransactionTestDataBuilder.aTransaction().build();
-        DescriptionTemplate actual = mapper.mapDescriptionTemplates("insolvency LIQ03", transaction);
+        DescriptionTemplate actual = mapper.mapDescriptionTemplates("insolvency LIQ03", new Filing());
         assertEquals("Notice of Progress Report (LIQ03)", actual.mappedDescription());
         assertEquals("filing_accepted_email_insolvency", actual.acceptedTemplate());
         assertEquals("filing_rejected_email_insolvency", actual.rejectedTemplate());
@@ -51,8 +46,7 @@ class FilingProcessedTemplateMapperTest {
 
     @Test
     void mapsInsolvencyUnknown() {
-        Transaction transaction = TransactionTestDataBuilder.aTransaction().build();
-        DescriptionTemplate actual = mapper.mapDescriptionTemplates("insolvency something else", transaction);
+        DescriptionTemplate actual = mapper.mapDescriptionTemplates("insolvency something else", new Filing());
         assertEquals("insolvency something else", actual.mappedDescription());
         assertEquals("filing_accepted_email_insolvency", actual.acceptedTemplate());
         assertEquals("filing_rejected_email_insolvency", actual.rejectedTemplate());
@@ -60,8 +54,7 @@ class FilingProcessedTemplateMapperTest {
 
     @Test
     void mapsPackageAccounts() {
-        Transaction transaction = TransactionTestDataBuilder.aTransaction().build();
-        DescriptionTemplate actual = mapper.mapDescriptionTemplates("Package accounts for year end", transaction);
+        DescriptionTemplate actual = mapper.mapDescriptionTemplates("Package accounts for year end", new Filing());
         assertEquals("Package accounts for year end", actual.mappedDescription());
         assertEquals("filing_accepted_package_accounts", actual.acceptedTemplate());
         assertEquals("filing_rejected_package_accounts", actual.rejectedTemplate());
@@ -69,8 +62,7 @@ class FilingProcessedTemplateMapperTest {
 
     @Test
     void mapsPackageAccountsOversea() {
-        Transaction transaction = TransactionTestDataBuilder.aTransaction().build();
-        DescriptionTemplate actual = mapper.mapDescriptionTemplates("Package accounts with package type overseas", transaction);
+        DescriptionTemplate actual = mapper.mapDescriptionTemplates("Package accounts with package type overseas", new Filing());
         assertEquals("Package accounts with package type overseas", actual.mappedDescription());
         assertEquals("filing_accepted_package_accounts_oversea", actual.acceptedTemplate());
         assertEquals("filing_rejected_package_accounts_oversea", actual.rejectedTemplate());
@@ -78,8 +70,7 @@ class FilingProcessedTemplateMapperTest {
 
     @Test
     void mapsRegisteredEmailAddress() {
-        Transaction transaction = TransactionTestDataBuilder.aTransaction().build();
-        DescriptionTemplate actual = mapper.mapDescriptionTemplates("Registered Email Address change", transaction);
+        DescriptionTemplate actual = mapper.mapDescriptionTemplates("Registered Email Address change", new Filing());
         assertEquals("Registered Email Address change", actual.mappedDescription());
         assertEquals("filing_processed_email_registered_email_address", actual.acceptedTemplate());
         assertEquals("filing_rejected_email", actual.rejectedTemplate());
@@ -87,8 +78,7 @@ class FilingProcessedTemplateMapperTest {
 
     @Test
     void mapsAcspApplicationUpdate() {
-        Transaction transaction = TransactionTestDataBuilder.aTransaction().build();
-        DescriptionTemplate actual = mapper.mapDescriptionTemplates("acsp application update", transaction);
+        DescriptionTemplate actual = mapper.mapDescriptionTemplates("acsp application update", new Filing());
         assertEquals("acsp application update", actual.mappedDescription());
         assertEquals("filing_accepted_update_acsp", actual.acceptedTemplate());
         assertEquals("filing_rejected_update_acsp", actual.rejectedTemplate());
@@ -96,8 +86,7 @@ class FilingProcessedTemplateMapperTest {
 
     @Test
     void mapsAcspApplicationClose() {
-        Transaction transaction = TransactionTestDataBuilder.aTransaction().build();
-        DescriptionTemplate actual = mapper.mapDescriptionTemplates("acsp application close", transaction);
+        DescriptionTemplate actual = mapper.mapDescriptionTemplates("acsp application close", new Filing());
         assertEquals("acsp application close", actual.mappedDescription());
         assertEquals("filing_accepted_close_acsp", actual.acceptedTemplate());
         assertEquals("", actual.rejectedTemplate());
@@ -105,8 +94,7 @@ class FilingProcessedTemplateMapperTest {
 
     @Test
     void mapsAcspApplicationRegister() {
-        Transaction transaction = TransactionTestDataBuilder.aTransaction().build();
-        DescriptionTemplate actual = mapper.mapDescriptionTemplates("acsp application", transaction);
+        DescriptionTemplate actual = mapper.mapDescriptionTemplates("acsp application", new Filing());
         assertEquals("acsp application", actual.mappedDescription());
         assertEquals("filing_accepted_register_acsp", actual.acceptedTemplate());
         assertEquals("filing_rejected_register_acsp", actual.rejectedTemplate());
@@ -120,8 +108,9 @@ class FilingProcessedTemplateMapperTest {
             "Dissolution application to strike off and dissolve a company, dissolution#DS01, filing_processed_email_ds01, filing_rejected_email_ds01"
     })
     void mapsDissolution(String description, String kind, String expectedAcceptedTemplate, String expectedRejectedTemplate) {
-        Transaction transaction = TransactionTestDataBuilder.aTransaction().withKind(kind).build();
-        DescriptionTemplate actual = mapper.mapDescriptionTemplates(description, transaction);
+        Filing filing = new Filing();
+        filing.setType(kind);
+        DescriptionTemplate actual = mapper.mapDescriptionTemplates(description, filing);
         assertEquals("Dissolution application to strike off and dissolve a company", actual.mappedDescription());
         assertEquals(expectedAcceptedTemplate, actual.acceptedTemplate());
         assertEquals(expectedRejectedTemplate, actual.rejectedTemplate());
@@ -129,8 +118,7 @@ class FilingProcessedTemplateMapperTest {
 
     @Test
     void mapsDefault() {
-        Transaction transaction = TransactionTestDataBuilder.aTransaction().build();
-        DescriptionTemplate actual = mapper.mapDescriptionTemplates("Some unrelated description", transaction);
+        DescriptionTemplate actual = mapper.mapDescriptionTemplates("Some unrelated description", new Filing());
         assertEquals("Some unrelated description", actual.mappedDescription());
         assertEquals("filing_processed_email", actual.acceptedTemplate());
         assertEquals("filing_rejected_email", actual.rejectedTemplate());

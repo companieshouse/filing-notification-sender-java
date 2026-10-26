@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.chskafka.MessageSend;
 import uk.gov.companieshouse.api.chskafka.MessageSendData;
+import uk.gov.companieshouse.api.model.transaction.Filing;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.filing.common.mapper.RandomNumberGenerator;
 import uk.gov.companieshouse.filing.common.testdata.TransactionTestDataBuilder;
@@ -14,6 +15,8 @@ import uk.gov.companieshouse.filing.processed.FilingProcessed;
 import uk.gov.companieshouse.filing.processed.PresenterRecord;
 import uk.gov.companieshouse.filing.processed.ResponseRecord;
 import uk.gov.companieshouse.filing.processed.SubmissionRecord;
+
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -36,7 +39,10 @@ class FilingProcessedMapperTest {
     void shouldMapAcceptedFilingProcessedAndTransactionToMessageSend() {
         // given
         FilingProcessed payload = buildPayload("accepted");
-        Transaction transaction = TransactionTestDataBuilder.aTransaction().withFilingDescription("submissionId", "originalDesc").build();
+        Filing filing = new Filing();
+        filing.setDescription("originalDesc");
+
+        Transaction transaction = TransactionTestDataBuilder.aTransaction().withFilings(Map.of("submissionId", filing)).build();
 
         when(filingProcessedTemplateMapper.mapDescriptionTemplates(any(), any()))
                 .thenReturn(new DescriptionTemplate("mappedDesc", "acceptTemp", "rejectTemp"));
@@ -50,7 +56,7 @@ class FilingProcessedMapperTest {
 
         // then
         assertEquals(expected, actual);
-        verify(filingProcessedTemplateMapper).mapDescriptionTemplates("originalDesc", transaction);
+        verify(filingProcessedTemplateMapper).mapDescriptionTemplates("originalDesc", filing);
         verify(randomNumberGenerator).random();
         verify(filingProcessedDataMapper).map(transaction, "originalDesc", payload, "mappedDesc");
     }
@@ -59,7 +65,9 @@ class FilingProcessedMapperTest {
     void shouldMapRejectedFilingProcessedAndTransactionToMessageSend() {
         // given
         FilingProcessed payload = buildPayload("rejected");
-        Transaction transaction = TransactionTestDataBuilder.aTransaction().withFilingDescription("submissionId", "originalDesc").build();
+        Filing filing = new Filing();
+        filing.setDescription("originalDesc");
+        Transaction transaction = TransactionTestDataBuilder.aTransaction().withFilings(Map.of("submissionId", filing)).build();
 
         when(filingProcessedTemplateMapper.mapDescriptionTemplates(any(), any()))
                 .thenReturn(new DescriptionTemplate("mappedDesc", "acceptTemp", "rejectTemp"));
@@ -73,7 +81,7 @@ class FilingProcessedMapperTest {
 
         // then
         assertEquals(expected, actual);
-        verify(filingProcessedTemplateMapper).mapDescriptionTemplates("originalDesc", transaction);
+        verify(filingProcessedTemplateMapper).mapDescriptionTemplates("originalDesc", filing);
         verify(randomNumberGenerator).random();
         verify(filingProcessedDataMapper).map(transaction, "originalDesc", payload, "mappedDesc");
     }
