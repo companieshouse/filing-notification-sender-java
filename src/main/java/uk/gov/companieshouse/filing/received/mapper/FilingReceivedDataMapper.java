@@ -36,6 +36,7 @@ public class FilingReceivedDataMapper {
                 .filingDescription(mappedDescription)
                 .to(payload.getPresenter().getUserId())
                 .subject(subject)
+                .filingDate(dateMapper.formatFullMonth(transaction.getClosedAt().substring(0, 10), true))
                 .receivedAtDate(dateMapper.formatFullMonth(submissionRecord.getReceivedAt().substring(0, 10), true))
                 .receivedAtTime(dateMapper.formatTimePeriod(submissionRecord.getReceivedAt()))
                 .transactionId(payload.getSubmission().getTransactionId());

@@ -17,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.chskafka.MessageSendData;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.filing.common.mapper.DateMapper;
+import uk.gov.companieshouse.filing.common.testdata.TransactionTestDataBuilder;
 import uk.gov.companieshouse.filing.processed.FilingProcessed;
 import uk.gov.companieshouse.filing.processed.PresenterRecord;
 import uk.gov.companieshouse.filing.processed.RejectRecord;
@@ -40,7 +41,11 @@ class FilingProcessedDataMapperTest {
     @Test
     void shouldMapMessageSendDataRejected() {
         // given
-        Transaction transaction = buildTransaction();
+        Transaction transaction = TransactionTestDataBuilder
+                .aTransaction()
+                .withCompanyName("transactionCompanyName")
+                .withClosedAt("2026-04-20T12:30:00Z")
+                .build();
         FilingProcessed payload = buildPayload("rejected");
         RejectRecord reject = new RejectRecord();
         reject.setReasonsEnglish(List.of("reason1", "reason2"));
@@ -59,6 +64,7 @@ class FilingProcessedDataMapperTest {
         // then
         assertEquals(expected, actual);
         verify(dateMapper).formatFullMonth("2026-04-20", false);
+        verify(dateMapper).formatFullMonth("2026-04-20", true);
     }
 
     @ParameterizedTest
@@ -69,7 +75,11 @@ class FilingProcessedDataMapperTest {
     })
     void shouldMapMessageSendDataAcceptedVaryingCompanyNames(String description, String expectedCompanyName) {
         // given
-        Transaction transaction = buildTransaction();
+        Transaction transaction = TransactionTestDataBuilder
+                .aTransaction()
+                .withCompanyName("transactionCompanyName")
+                .withClosedAt("2026-04-20T12:30:00Z")
+                .build();
         FilingProcessed payload = buildPayload("accepted");
 
         when(dateMapper.formatFullMonth(any(), anyBoolean())).thenReturn("20 April 2026");
@@ -82,12 +92,14 @@ class FilingProcessedDataMapperTest {
         // then
         assertEquals(expected, actual);
         verify(dateMapper).formatFullMonth("2026-04-20", false);
+        verify(dateMapper).formatFullMonth("2026-04-20", true);
     }
 
     @Test
     void shouldMapMessageSendDataAcceptedChangeROAMissingCompanyName() {
         // given
         Transaction transaction = new Transaction();
+        transaction.setClosedAt("2026-04-20T12:30:00Z");
         FilingProcessed payload = buildPayload("accepted");
 
         when(dateMapper.formatFullMonth(any(), anyBoolean())).thenReturn("20 April 2026");
@@ -100,6 +112,7 @@ class FilingProcessedDataMapperTest {
         // then
         assertEquals(expected, actual);
         verify(dateMapper).formatFullMonth("2026-04-20", false);
+        verify(dateMapper).formatFullMonth("2026-04-20", true);
     }
 
     private static MessageSendData buildMessageSendData(String companyName, String status) {
@@ -110,16 +123,11 @@ class FilingProcessedDataMapperTest {
         data.filingDescription("mappedDesc");
         data.to("presenterUserId");
         data.subject("mappedDesc " + status + " for " + companyName + " (12345678)");
+        data.filingDate("20 April 2026");
         data.processedAt("20 April 2026");
         data.status(status);
         data.transactionId("transactionId");
         return data;
-    }
-
-    private static Transaction buildTransaction() {
-        Transaction transaction = new Transaction();
-        transaction.setCompanyName("transactionCompanyName");
-        return transaction;
     }
 
     private static FilingProcessed buildPayload(String status) {

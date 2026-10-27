@@ -39,6 +39,7 @@ public class FilingProcessedDataMapper {
                 .filingDescription(mappedDescription)
                 .to(payload.getPresenter().getUserId())
                 .subject(subject)
+                .filingDate(dateMapper.formatFullMonth(transaction.getClosedAt().substring(0, 10), true))
                 .processedAt(dateMapper.formatFullMonth(responseRecord.getProcessedAt().substring(0, 10), false))
                 .status(responseRecord.getStatus())
                 .transactionId(payload.getSubmission().getTransactionId());

@@ -10,6 +10,7 @@ public class TransactionTestDataBuilder {
 
     private String companyName = "Test Company Ltd";
     private String kind = "Kind#subkind";
+    private String closedAt = "";
     private final Map<String, Filing> filings = new HashMap<>();
 
     public static TransactionTestDataBuilder aTransaction() {
@@ -37,11 +38,17 @@ public class TransactionTestDataBuilder {
         return this;
     }
 
+    public TransactionTestDataBuilder withClosedAt(String closedAt) {
+        this.closedAt = closedAt;
+        return this;
+    }
+
     public Transaction build() {
         Transaction transaction = new Transaction();
         transaction.setCompanyName(companyName);
         transaction.setKind(kind);
         transaction.setFilings(new HashMap<>(filings));
+        transaction.setClosedAt(closedAt);
         return transaction;
     }
 
