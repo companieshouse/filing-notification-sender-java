@@ -3,6 +3,7 @@ package uk.gov.companieshouse.filing.received.mapper;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -15,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.chskafka.MessageSendData;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.filing.common.mapper.DateMapper;
+import uk.gov.companieshouse.filing.common.testdata.TransactionTestDataBuilder;
 import uk.gov.companieshouse.filing.received.FilingReceived;
 import uk.gov.companieshouse.filing.received.PresenterRecord;
 import uk.gov.companieshouse.filing.received.SubmissionRecord;
@@ -41,7 +43,11 @@ class FilingReceivedDataMapperTest {
     })
     void shouldMapMessageSendDataVaryingCompanyNames(String kind, String originalDescription, String expectedCompanyName) {
         // given
-        Transaction transaction = buildTransaction();
+        Transaction transaction = TransactionTestDataBuilder
+                .aTransaction()
+                .withCompanyName("transactionCompanyName")
+                .withClosedAt("2026-04-20T12:30:00Z")
+                .build();
         uk.gov.companieshouse.filing.received.Transaction item = buildItem(kind);
         FilingReceived payload = buildPayload();
 
@@ -55,7 +61,7 @@ class FilingReceivedDataMapperTest {
 
         // then
         assertEquals(expected, actual);
-        verify(dateMapper).formatFullMonth("2026-04-20", true);
+        verify(dateMapper, times(2)).formatFullMonth("2026-04-20", true);
         verify(dateMapper).formatTimePeriod("2026-04-20T12:30:00Z");
     }
 
@@ -67,6 +73,7 @@ class FilingReceivedDataMapperTest {
         data.filingDescription("mappedDesc");
         data.to("presenterUserId");
         data.subject("mappedDesc received for " + companyName + " (12345678)");
+        data.filingDate("20 April 2026");
         data.receivedAtDate("20 April 2026");
         data.receivedAtTime("12:30pm");
         data.transactionId("transactionId");
@@ -77,12 +84,6 @@ class FilingReceivedDataMapperTest {
         uk.gov.companieshouse.filing.received.Transaction item = new uk.gov.companieshouse.filing.received.Transaction();
         item.setKind(kind);
         return item;
-    }
-
-    private static Transaction buildTransaction() {
-        Transaction transaction = new Transaction();
-        transaction.setCompanyName("transactionCompanyName");
-        return transaction;
     }
 
     private static FilingReceived buildPayload() {

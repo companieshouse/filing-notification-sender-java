@@ -1,16 +1,28 @@
 package uk.gov.companieshouse.filing.processed.mapper;
 
 import org.springframework.stereotype.Component;
+import uk.gov.companieshouse.api.model.transaction.Filing;
+import uk.gov.companieshouse.filing.common.mapper.MapperUtils;
+
+import static uk.gov.companieshouse.filing.common.mapper.Constants.DISSOLUTION_DESCRIPTION;
+import static uk.gov.companieshouse.filing.common.mapper.Constants.DISSOLUTION_KIND_DS01;
+import static uk.gov.companieshouse.filing.common.mapper.Constants.DISSOLUTION_KIND_LLDS01;
 
 @Component
 public class FilingProcessedTemplateMapper {
 
-    DescriptionTemplate mapDescriptionTemplates(String description) {
+    private static final String FILING_PROCESSED_TEMPLATE_PREFIX = "filing_processed_email";
+    private static final String FILING_REJECTED_TEMPLATE_PREFIX = "filing_rejected_email";
+
+    DescriptionTemplate mapDescriptionTemplates(String description, Filing filing) {
         return switch (description) {
             case String desc when desc.contains("insolvency") -> mapInsolvencyDescriptionTemplates(description);
             case String desc when desc.contains("Package accounts") -> mapPackageAccountsTemplates(description);
-            case String desc when desc.contains("Registered Email Address") -> mapRegisteredEmailAddressTemplates(description);
+            case String desc when desc.contains("Registered Email Address") ->
+                    mapRegisteredEmailAddressTemplates(description);
             case String desc when desc.toUpperCase().contains("ACSP APPLICATION") -> mapAcspTemplates(description);
+            case String desc when desc.contains(DISSOLUTION_DESCRIPTION) ->
+                    mapDissolutionTemplates(description, filing);
             default -> mapDefaultTemplates(description);
         };
     }
@@ -43,8 +55,7 @@ public class FilingProcessedTemplateMapper {
 
     private static DescriptionTemplate mapRegisteredEmailAddressTemplates(String description) {
         String acceptedTemplate = "filing_processed_email_registered_email_address";
-        String rejectedTemplate = "filing_rejected_email";
-        return new DescriptionTemplate(description, acceptedTemplate, rejectedTemplate);
+        return new DescriptionTemplate(description, acceptedTemplate, FILING_REJECTED_TEMPLATE_PREFIX);
     }
 
     private static DescriptionTemplate mapAcspTemplates(String description) {
@@ -63,9 +74,17 @@ public class FilingProcessedTemplateMapper {
         return new DescriptionTemplate(description, acceptedTemplate, rejectedTemplate);
     }
 
-    private static DescriptionTemplate mapDefaultTemplates(String description) {
-        String acceptedTemplate = "filing_processed_email";
-        String rejectedTemplate = "filing_rejected_email";
+    private static DescriptionTemplate mapDissolutionTemplates(String description, Filing filing) {
+        final String templateSuffix = MapperUtils.containsIgnoreCase(filing.getType(), DISSOLUTION_KIND_LLDS01)
+                ? DISSOLUTION_KIND_LLDS01
+                : DISSOLUTION_KIND_DS01;
+
+        final String acceptedTemplate = MapperUtils.constructTemplateName(FILING_PROCESSED_TEMPLATE_PREFIX, templateSuffix);
+        final String rejectedTemplate = MapperUtils.constructTemplateName(FILING_REJECTED_TEMPLATE_PREFIX, templateSuffix);
         return new DescriptionTemplate(description, acceptedTemplate, rejectedTemplate);
+    }
+
+    private static DescriptionTemplate mapDefaultTemplates(String description) {
+        return new DescriptionTemplate(description, FILING_PROCESSED_TEMPLATE_PREFIX, FILING_REJECTED_TEMPLATE_PREFIX);
     }
 }
