@@ -102,16 +102,16 @@ class FilingProcessedTemplateMapperTest {
 
     @ParameterizedTest
     @CsvSource({
-            "Dissolution application to strike off and dissolve a company, dissolution#ds01, filing_processed_email_ds01, filing_rejected_email_ds01",
-            "Dissolution application to strike off and dissolve a company, dissolution#llds01, filing_processed_email_llds01, filing_rejected_email_llds01",
-            "Dissolution application to strike off and dissolve a company, dissolution#lpds01, filing_processed_email_ds01, filing_rejected_email_ds01",
-            "Dissolution application to strike off and dissolve a company, dissolution#DS01, filing_processed_email_ds01, filing_rejected_email_ds01"
+            "Application to strike off and dissolve a company, dissolution#ds01, filing_processed_email_ds01, filing_rejected_email_ds01",
+            "Application to strike off and dissolve a company, dissolution#llds01, filing_processed_email_llds01, filing_rejected_email_llds01",
+            "Application to strike off and dissolve a company, dissolution#lpds01, filing_processed_email_ds01, filing_rejected_email_ds01",
+            "Application to strike off and dissolve a company, dissolution#DS01, filing_processed_email_ds01, filing_rejected_email_ds01"
     })
     void mapsDissolution(String description, String kind, String expectedAcceptedTemplate, String expectedRejectedTemplate) {
         Filing filing = new Filing();
         filing.setType(kind);
         DescriptionTemplate actual = mapper.mapDescriptionTemplates(description, filing);
-        assertEquals("Dissolution application to strike off and dissolve a company", actual.mappedDescription());
+        assertEquals("Application to strike off and dissolve a company", actual.mappedDescription());
         assertEquals(expectedAcceptedTemplate, actual.acceptedTemplate());
         assertEquals(expectedRejectedTemplate, actual.rejectedTemplate());
     }
