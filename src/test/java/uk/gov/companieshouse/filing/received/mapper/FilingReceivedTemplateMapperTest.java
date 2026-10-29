@@ -66,16 +66,16 @@ class FilingReceivedTemplateMapperTest {
 
     @ParameterizedTest
     @CsvSource({
-            "Dissolution application to strike off and dissolve a company, dissolution#ds01, filing_received_email_ds01",
-            "Dissolution application to strike off and dissolve a company, dissolution#llds01, filing_received_email_llds01",
-            "Dissolution application to strike off and dissolve a company, dissolution#lpds01, filing_received_email_ds01",
-            "Dissolution application to strike off and dissolve a company, dissolution#DS01, filing_received_email_ds01"
+            "Application to strike off and dissolve a company, dissolution#ds01, filing_received_email_ds01",
+            "Application to strike off and dissolve a company, dissolution#llds01, filing_received_email_llds01",
+            "Application to strike off and dissolve a company, dissolution#lpds01, filing_received_email_ds01",
+            "Application to strike off and dissolve a company, dissolution#DS01, filing_received_email_ds01"
     })
     void mapsDissolutionTemplates(String description, String kind, String expectedTemplate) {
         Transaction item = new Transaction();
         item.setKind(kind);
         DescriptionTemplate actual = mapper.mapDescriptionTemplates(description, item);
-        assertEquals("Dissolution application to strike off and dissolve a company", actual.mappedDescription());
+        assertEquals("Application to strike off and dissolve a company", actual.mappedDescription());
         assertEquals(expectedTemplate, actual.template());
     }
 
