@@ -19,17 +19,15 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <!-- external -->
-        <opentelemetry-instrumentation.version>2.30.0</opentelemetry-instrumentation.version>
-        <opentelemetry-logback-appender.version>2.30.0-alpha</opentelemetry-logback-appender.version>
-        <spring.boot.version>4.1.1</spring.boot.version>
+        <spring.boot.version>4.1.2</spring.boot.version>
         <!-- companies house -->
-        <ch-dependency-bom.version>0.1.33</ch-dependency-bom.version>
-        <ch-test-bom.version>0.1.33</ch-test-bom.version>
-        <private-api-sdk-java.version>7.2.27</private-api-sdk-java.version>
+        <ch-dependency-bom.version>0.1.41</ch-dependency-bom.version>
+        <ch-test-bom.version>0.1.41</ch-test-bom.version>
+        <private-api-sdk-java.version>7.2.51</private-api-sdk-java.version>
         <!-- test -->
-        <maven-failsafe-plugin.version>3.6.0</maven-failsafe-plugin.version>
-        <maven-surefire-plugin.version>3.6.0</maven-surefire-plugin.version>
-        <jacoco-maven-plugin.version>0.8.15</jacoco-maven-plugin.version>
+        <maven-failsafe-plugin.version>3.6.1</maven-failsafe-plugin.version>
+        <maven-surefire-plugin.version>3.6.1</maven-surefire-plugin.version>
+        <jacoco-maven-plugin.version>0.8.16</jacoco-maven-plugin.version>
         <jib-maven-plugin.version>3.5.2</jib-maven-plugin.version>
         <wiremock-standalone.version>3.13.2</wiremock-standalone.version>
     </properties>
@@ -46,13 +44,6 @@
                 <groupId>uk.gov.companieshouse</groupId>
                 <artifactId>ch-test-bom</artifactId>
                 <version>${ch-test-bom.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>io.opentelemetry.instrumentation</groupId>
-                <artifactId>opentelemetry-instrumentation-bom</artifactId>
-                <version>${opentelemetry-instrumentation.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -74,7 +65,6 @@
         <dependency>
             <groupId>io.opentelemetry.instrumentation</groupId>
             <artifactId>opentelemetry-logback-appender-1.0</artifactId>
-            <version>${opentelemetry-logback-appender.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -125,24 +115,10 @@
             <groupId>uk.gov.companieshouse</groupId>
             <artifactId>private-api-sdk-java</artifactId>
             <version>${private-api-sdk-java.version}</version>
-            <exclusions>
-                <!-- not required, use logback instead -->
-                <exclusion>
-                    <groupId>org.apache.logging.log4j</groupId>
-                    <artifactId>log4j-api</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>uk.gov.companieshouse</groupId>
             <artifactId>structured-logging</artifactId>
-            <exclusions>
-                <!-- not required, use logback instead -->
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-simple</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <!-- test -->
         <dependency>
@@ -197,6 +173,11 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.10.0</version>
             </plugin>
             <plugin>
                 <groupId>com.google.cloud.tools</groupId>
