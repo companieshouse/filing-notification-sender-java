@@ -60,6 +60,7 @@ public class FilingProcessedKafkaConfig {
         factory.setConsumerFactory(consumerFactory);
         factory.setConcurrency(concurrency);
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.RECORD);
+        factory.getContainerProperties().setObservationEnabled(true);
         return factory;
     }
 
@@ -85,7 +86,9 @@ public class FilingProcessedKafkaConfig {
     @Bean
     public KafkaTemplate<String, Object> processedKafkaTemplate(
             @Qualifier("processedProducerFactory") ProducerFactory<String, Object> producerFactory) {
-        return new KafkaTemplate<>(producerFactory);
+        KafkaTemplate<String, Object> kafkaTemplate = new KafkaTemplate<>(producerFactory);
+        kafkaTemplate.setObservationEnabled(true);
+        return kafkaTemplate;
     }
 
     @Bean
