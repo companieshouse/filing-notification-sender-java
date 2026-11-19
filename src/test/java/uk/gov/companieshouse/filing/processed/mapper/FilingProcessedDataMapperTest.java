@@ -115,14 +115,42 @@ class FilingProcessedDataMapperTest {
         verify(dateMapper).formatFullMonth("2026-04-20", true);
     }
 
+    @Test
+    void shouldMapMessageSendDataAcceptedMissingCompanyNumber() {
+        // given
+        Transaction transaction = TransactionTestDataBuilder
+                .aTransaction()
+                .withCompanyName("transactionCompanyName")
+                .withClosedAt("2026-04-20T12:30:00Z")
+                .build();
+        FilingProcessed payload = buildPayload("accepted");
+        payload.getResponse().setCompanyNumber(null);
+
+        when(dateMapper.formatFullMonth(any(), anyBoolean())).thenReturn("20 April 2026");
+
+        MessageSendData expected = buildMessageSendData("transactionCompanyName", "accepted", "");
+
+        // when
+        MessageSendData actual = mapper.map(transaction, "originalDesc", payload, "mappedDesc");
+
+        // then
+        assertEquals(expected, actual);
+        verify(dateMapper).formatFullMonth("2026-04-20", false);
+        verify(dateMapper).formatFullMonth("2026-04-20", true);
+    }
+
     private static MessageSendData buildMessageSendData(String companyName, String status) {
+        return buildMessageSendData(companyName, status, "12345678");
+    }
+
+    private static MessageSendData buildMessageSendData(String companyName, String status, String companyNumber) {
         MessageSendData data = new MessageSendData();
         data.chsUrl(CHS_URL);
         data.companyName(companyName);
-        data.companyNumber("12345678");
+        data.companyNumber(companyNumber);
         data.filingDescription("mappedDesc");
         data.to("presenterUserId");
-        data.subject("mappedDesc " + status + " for " + companyName + " (12345678)");
+        data.subject("mappedDesc " + status + " for " + companyName + " (" + companyNumber + ")");
         data.filingDate("20 April 2026");
         data.processedAt("20 April 2026");
         data.status(status);

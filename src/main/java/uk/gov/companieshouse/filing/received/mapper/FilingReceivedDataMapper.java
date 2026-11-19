@@ -27,12 +27,14 @@ public class FilingReceivedDataMapper {
             companyName = submissionRecord.getCompanyName();
         }
 
-        String subject = "%s received for %s (%s)".formatted(mappedDescription, companyName, submissionRecord.getCompanyNumber());
+        String companyNumber = (submissionRecord.getCompanyNumber() != null) ? submissionRecord.getCompanyNumber()  : "";
+
+        String subject = "%s received for %s (%s)".formatted(mappedDescription, companyName, companyNumber);
 
         return new MessageSendData()
                 .chsUrl(chsUrl)
                 .companyName(companyName)
-                .companyNumber(submissionRecord.getCompanyNumber())
+                .companyNumber(companyNumber)
                 .filingDescription(mappedDescription)
                 .to(payload.getPresenter().getUserId())
                 .subject(subject)
