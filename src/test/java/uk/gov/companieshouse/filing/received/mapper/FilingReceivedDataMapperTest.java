@@ -7,10 +7,13 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.chskafka.MessageSendData;
@@ -65,14 +68,52 @@ class FilingReceivedDataMapperTest {
         verify(dateMapper).formatTimePeriod("2026-04-20T12:30:00Z");
     }
 
+    @ParameterizedTest
+    @MethodSource("companyNumberCases")
+    void shouldMapMessageSendDataVaryingCompanyNumbers(String companyNumber, String expectedCompanyNumber) {
+        // given
+        Transaction transaction = TransactionTestDataBuilder
+                .aTransaction()
+                .withCompanyName("transactionCompanyName")
+                .withClosedAt("2026-04-20T12:30:00Z")
+                .build();
+        uk.gov.companieshouse.filing.received.Transaction item = buildItem("kind");
+        FilingReceived payload = buildPayload();
+        payload.getSubmission().setCompanyNumber(companyNumber);
+
+        when(dateMapper.formatFullMonth(any(), anyBoolean())).thenReturn("20 April 2026");
+        when(dateMapper.formatTimePeriod(any())).thenReturn("12:30pm");
+
+        MessageSendData expected = buildMessageSendData("transactionCompanyName", expectedCompanyNumber);
+
+        // when
+        MessageSendData actual = mapper.map(transaction, "originalDesc", payload, "mappedDesc", item);
+
+        // then
+        assertEquals(expected, actual);
+        verify(dateMapper, times(2)).formatFullMonth("2026-04-20", true);
+        verify(dateMapper).formatTimePeriod("2026-04-20T12:30:00Z");
+    }
+
+    private static Stream<Arguments> companyNumberCases() {
+        return Stream.of(
+                Arguments.of("12345678", "12345678"),
+                Arguments.of(null, "")
+        );
+    }
+
     private static MessageSendData buildMessageSendData(String companyName) {
+        return buildMessageSendData(companyName, "12345678");
+    }
+
+    private static MessageSendData buildMessageSendData(String companyName, String companyNumber) {
         MessageSendData data = new MessageSendData();
         data.chsUrl(CHS_URL);
         data.companyName(companyName);
-        data.companyNumber("12345678");
+        data.companyNumber(companyNumber);
         data.filingDescription("mappedDesc");
         data.to("presenterUserId");
-        data.subject("mappedDesc received for " + companyName + " (12345678)");
+        data.subject("mappedDesc received for " + companyName + " (" + companyNumber + ")");
         data.filingDate("20 April 2026");
         data.receivedAtDate("20 April 2026");
         data.receivedAtTime("12:30pm");

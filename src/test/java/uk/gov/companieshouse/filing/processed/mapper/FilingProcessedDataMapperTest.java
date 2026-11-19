@@ -7,11 +7,14 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.chskafka.MessageSendData;
@@ -115,8 +118,9 @@ class FilingProcessedDataMapperTest {
         verify(dateMapper).formatFullMonth("2026-04-20", true);
     }
 
-    @Test
-    void shouldMapMessageSendDataAcceptedMissingCompanyNumber() {
+    @ParameterizedTest
+    @MethodSource("companyNumberCases")
+    void shouldMapMessageSendDataAcceptedVaryingCompanyNumbers(String companyNumber, String expectedCompanyNumber) {
         // given
         Transaction transaction = TransactionTestDataBuilder
                 .aTransaction()
@@ -124,11 +128,11 @@ class FilingProcessedDataMapperTest {
                 .withClosedAt("2026-04-20T12:30:00Z")
                 .build();
         FilingProcessed payload = buildPayload("accepted");
-        payload.getResponse().setCompanyNumber(null);
+        payload.getResponse().setCompanyNumber(companyNumber);
 
         when(dateMapper.formatFullMonth(any(), anyBoolean())).thenReturn("20 April 2026");
 
-        MessageSendData expected = buildMessageSendData("transactionCompanyName", "accepted", "");
+        MessageSendData expected = buildMessageSendData("transactionCompanyName", "accepted", expectedCompanyNumber);
 
         // when
         MessageSendData actual = mapper.map(transaction, "originalDesc", payload, "mappedDesc");
@@ -137,6 +141,13 @@ class FilingProcessedDataMapperTest {
         assertEquals(expected, actual);
         verify(dateMapper).formatFullMonth("2026-04-20", false);
         verify(dateMapper).formatFullMonth("2026-04-20", true);
+    }
+
+    private static Stream<Arguments> companyNumberCases() {
+        return Stream.of(
+                Arguments.of("12345678", "12345678"),
+                Arguments.of(null, "")
+        );
     }
 
     private static MessageSendData buildMessageSendData(String companyName, String status) {
