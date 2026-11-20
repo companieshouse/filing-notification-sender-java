@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.filing.received.mapper;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.chskafka.MessageSendData;
@@ -27,9 +28,12 @@ public class FilingReceivedDataMapper {
             companyName = submissionRecord.getCompanyName();
         }
 
-        String companyNumber = (submissionRecord.getCompanyNumber() != null) ? submissionRecord.getCompanyNumber()  : "";
+        String subject = "%s received for %s".formatted(mappedDescription, companyName);
 
-        String subject = "%s received for %s (%s)".formatted(mappedDescription, companyName, companyNumber);
+        String companyNumber = submissionRecord.getCompanyNumber();
+        if (StringUtils.isNotBlank(companyNumber)) {
+            subject += " (%s)".formatted(companyNumber);
+        }
 
         return new MessageSendData()
                 .chsUrl(chsUrl)

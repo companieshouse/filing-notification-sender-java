@@ -7,14 +7,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.chskafka.MessageSendData;
@@ -118,9 +115,8 @@ class FilingProcessedDataMapperTest {
         verify(dateMapper).formatFullMonth("2026-04-20", true);
     }
 
-    @ParameterizedTest
-    @MethodSource("companyNumberCases")
-    void shouldMapMessageSendDataAcceptedVaryingCompanyNumbers(String companyNumber, String expectedCompanyNumber) {
+    @Test
+    void shouldMapMessageSendDataWithCompanyNumber() {
         // given
         Transaction transaction = TransactionTestDataBuilder
                 .aTransaction()
@@ -128,11 +124,11 @@ class FilingProcessedDataMapperTest {
                 .withClosedAt("2026-04-20T12:30:00Z")
                 .build();
         FilingProcessed payload = buildPayload("accepted");
-        payload.getResponse().setCompanyNumber(companyNumber);
+        payload.getResponse().setCompanyNumber("12345678");
 
         when(dateMapper.formatFullMonth(any(), anyBoolean())).thenReturn("20 April 2026");
 
-        MessageSendData expected = buildMessageSendData("transactionCompanyName", "accepted", expectedCompanyNumber);
+        MessageSendData expected = buildMessageSendData("transactionCompanyName", "accepted", "12345678");
 
         // when
         MessageSendData actual = mapper.map(transaction, "originalDesc", payload, "mappedDesc");
@@ -143,25 +139,13 @@ class FilingProcessedDataMapperTest {
         verify(dateMapper).formatFullMonth("2026-04-20", true);
     }
 
-    private static Stream<Arguments> companyNumberCases() {
-        return Stream.of(
-                Arguments.of("12345678", "12345678"),
-                Arguments.of(null, "")
-        );
-    }
-
     private static MessageSendData buildMessageSendData(String companyName, String status) {
-        return buildMessageSendData(companyName, status, "12345678");
-    }
-
-    private static MessageSendData buildMessageSendData(String companyName, String status, String companyNumber) {
         MessageSendData data = new MessageSendData();
         data.chsUrl(CHS_URL);
         data.companyName(companyName);
-        data.companyNumber(companyNumber);
         data.filingDescription("mappedDesc");
         data.to("presenterUserId");
-        data.subject("mappedDesc " + status + " for " + companyName + " (" + companyNumber + ")");
+        data.subject("mappedDesc " + status + " for " + companyName);
         data.filingDate("20 April 2026");
         data.processedAt("20 April 2026");
         data.status(status);
@@ -169,10 +153,16 @@ class FilingProcessedDataMapperTest {
         return data;
     }
 
+    private static MessageSendData buildMessageSendData(String companyName, String status, String companyNumber) {
+        MessageSendData data = buildMessageSendData(companyName, status);
+        data.companyNumber(companyNumber);
+        data.subject("mappedDesc " + status + " for " + companyName + " (" + companyNumber + ")");
+        return data;
+    }
+
     private static FilingProcessed buildPayload(String status) {
         ResponseRecord responseRecord = new ResponseRecord();
         responseRecord.setStatus(status);
-        responseRecord.setCompanyNumber("12345678");
         responseRecord.setProcessedAt("2026-04-20T12:00:00Z");
         responseRecord.setCompanyName("responseCompanyName");
 

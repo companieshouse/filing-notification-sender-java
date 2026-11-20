@@ -29,9 +29,12 @@ public class FilingProcessedDataMapper {
             companyName = responseRecord.getCompanyName();
         }
 
-        var companyNumber = (responseRecord.getCompanyNumber() != null) ? responseRecord.getCompanyNumber()  : "";
+        String subject = "%s %s for %s".formatted(mappedDescription, responseRecord.getStatus(), companyName);
 
-        String subject = "%s %s for %s (%s)".formatted(mappedDescription, responseRecord.getStatus(), companyName, companyNumber);
+        String companyNumber = responseRecord.getCompanyNumber();
+        if (StringUtils.isNotBlank(companyNumber)) {
+            subject += " (%s)".formatted(companyNumber);
+        }
 
         MessageSendData data = new MessageSendData()
                 .chsUrl(chsUrl)
