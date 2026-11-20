@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -65,19 +66,50 @@ class FilingReceivedDataMapperTest {
         verify(dateMapper).formatTimePeriod("2026-04-20T12:30:00Z");
     }
 
+    @Test
+    void shouldMapMessageSendDataWithCompanyNumber() {
+        // given
+        Transaction transaction = TransactionTestDataBuilder
+                .aTransaction()
+                .withCompanyName("transactionCompanyName")
+                .withClosedAt("2026-04-20T12:30:00Z")
+                .build();
+        uk.gov.companieshouse.filing.received.Transaction item = buildItem("kind");
+        FilingReceived payload = buildPayload();
+        payload.getSubmission().setCompanyNumber("12345678");
+
+        when(dateMapper.formatFullMonth(any(), anyBoolean())).thenReturn("20 April 2026");
+        when(dateMapper.formatTimePeriod(any())).thenReturn("12:30pm");
+
+        MessageSendData expected = buildMessageSendData("transactionCompanyName", "12345678");
+
+        // when
+        MessageSendData actual = mapper.map(transaction, "originalDesc", payload, "mappedDesc", item);
+
+        // then
+        assertEquals(expected, actual);
+        verify(dateMapper, times(2)).formatFullMonth("2026-04-20", true);
+        verify(dateMapper).formatTimePeriod("2026-04-20T12:30:00Z");
+    }
+
     private static MessageSendData buildMessageSendData(String companyName) {
         MessageSendData data = new MessageSendData();
         data.chsUrl(CHS_URL);
         data.companyName(companyName);
-        data.companyNumber("12345678");
         data.filingDescription("mappedDesc");
         data.to("presenterUserId");
-        data.subject("mappedDesc received for " + companyName + " (12345678)");
+        data.subject("mappedDesc received for " + companyName);
         data.filingDate("20 April 2026");
         data.receivedAtDate("20 April 2026");
         data.receivedAtTime("12:30pm");
         data.transactionId("transactionId");
         return data;
+    }
+
+    private static MessageSendData buildMessageSendData(String companyName, String companyNumber) {
+        return buildMessageSendData(companyName)
+                .companyNumber(companyNumber)
+                .subject("mappedDesc received for " + companyName + " (" + companyNumber + ")");
     }
 
     private static uk.gov.companieshouse.filing.received.Transaction buildItem(String kind) {
@@ -94,7 +126,6 @@ class FilingReceivedDataMapperTest {
         submissionRecord.setTransactionId("transactionId");
         submissionRecord.setReceivedAt("2026-04-20T12:30:00Z");
         submissionRecord.setCompanyName("submissionCompanyName");
-        submissionRecord.setCompanyNumber("12345678");
 
         FilingReceived filingReceived = new FilingReceived();
         filingReceived.setPresenter(presenterRecord);

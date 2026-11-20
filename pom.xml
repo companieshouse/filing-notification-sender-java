@@ -18,8 +18,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <!--Companies House-->
-        <ch-dependency-bom.version>0.1.41</ch-dependency-bom.version>
-        <ch-test-bom.version>0.1.41</ch-test-bom.version>
+        <ch-dependency-bom.version>0.1.42</ch-dependency-bom.version>
+        <ch-test-bom.version>0.1.42</ch-test-bom.version>
         <private-api-sdk-java.version>7.2.51</private-api-sdk-java.version>
         <!--External-->
         <spring.boot.version>4.1.2</spring.boot.version>

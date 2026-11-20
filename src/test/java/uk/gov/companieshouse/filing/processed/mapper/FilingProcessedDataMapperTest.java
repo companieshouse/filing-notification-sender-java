@@ -115,14 +115,37 @@ class FilingProcessedDataMapperTest {
         verify(dateMapper).formatFullMonth("2026-04-20", true);
     }
 
+    @Test
+    void shouldMapMessageSendDataWithCompanyNumber() {
+        // given
+        Transaction transaction = TransactionTestDataBuilder
+                .aTransaction()
+                .withCompanyName("transactionCompanyName")
+                .withClosedAt("2026-04-20T12:30:00Z")
+                .build();
+        FilingProcessed payload = buildPayload("accepted");
+        payload.getResponse().setCompanyNumber("12345678");
+
+        when(dateMapper.formatFullMonth(any(), anyBoolean())).thenReturn("20 April 2026");
+
+        MessageSendData expected = buildMessageSendData("transactionCompanyName", "accepted", "12345678");
+
+        // when
+        MessageSendData actual = mapper.map(transaction, "originalDesc", payload, "mappedDesc");
+
+        // then
+        assertEquals(expected, actual);
+        verify(dateMapper).formatFullMonth("2026-04-20", false);
+        verify(dateMapper).formatFullMonth("2026-04-20", true);
+    }
+
     private static MessageSendData buildMessageSendData(String companyName, String status) {
         MessageSendData data = new MessageSendData();
         data.chsUrl(CHS_URL);
         data.companyName(companyName);
-        data.companyNumber("12345678");
         data.filingDescription("mappedDesc");
         data.to("presenterUserId");
-        data.subject("mappedDesc " + status + " for " + companyName + " (12345678)");
+        data.subject("mappedDesc " + status + " for " + companyName);
         data.filingDate("20 April 2026");
         data.processedAt("20 April 2026");
         data.status(status);
@@ -130,10 +153,16 @@ class FilingProcessedDataMapperTest {
         return data;
     }
 
+    private static MessageSendData buildMessageSendData(String companyName, String status, String companyNumber) {
+        MessageSendData data = buildMessageSendData(companyName, status);
+        data.companyNumber(companyNumber);
+        data.subject("mappedDesc " + status + " for " + companyName + " (" + companyNumber + ")");
+        return data;
+    }
+
     private static FilingProcessed buildPayload(String status) {
         ResponseRecord responseRecord = new ResponseRecord();
         responseRecord.setStatus(status);
-        responseRecord.setCompanyNumber("12345678");
         responseRecord.setProcessedAt("2026-04-20T12:00:00Z");
         responseRecord.setCompanyName("responseCompanyName");
 
